@@ -9,7 +9,7 @@ const DEFAULTS = {
   ecl: 2, minver: 0, mask: -1,
 
   /* geometry */
-  cell: 10, quiet: 4, canvasRadius: 0,
+  cell: 10, quiet: 4,
 
   /* module shape */
   shape: "rounded", scale: 0.92, radius: 0.5, mergeRuns: true,
@@ -74,8 +74,7 @@ const PRESETS = {
   "nom-nom": {
     text: "https://nom-nom.sh-development.ru/",
     ecl: 3, minver: 0, mask: -1,
-    cell: 10, quiet: 4, canvasRadius: 28,
-    shape: "circle", scale: 0.86, mergeRuns: true,
+    cell: 10, quiet: 4, shape: "circle", scale: 0.86, mergeRuns: true,
     falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0,
     eyeFrame: "circle", eyeBall: "circle",
     eyeColorMode: "custom", eyeFrameColor: "#C8695A", eyeBallColor: "#E9CFA9",
@@ -94,14 +93,14 @@ const PRESETS = {
   "Spec default": {
     shape: "square", scale: 1, radius: 0, eyeFrame: "square", eyeBall: "square",
     eyeColorMode: "inherit", fgMode: "solid", fg: "#000000", fgOpacity: 1,
-    bgMode: "solid", bg: "#FFFFFF", quiet: 4, canvasRadius: 0, ecl: 1,
+    bgMode: "solid", bg: "#FFFFFF", quiet: 4, ecl: 1,
     logo: null, logoText: "", frame: "none", shadow: false, glow: false,
     noise: 0, stroke: 0, invert: false, falloff: "none",
     jitterRot: 0, jitterScale: 0, jitterPos: 0
   },
   "Soft dots": {
     shape: "circle", scale: 0.82, eyeFrame: "circle", eyeBall: "circle",
-    fgMode: "solid", fg: "#1D2733", bgMode: "solid", bg: "#F4F6F8", canvasRadius: 24,
+    fgMode: "solid", fg: "#1D2733", bgMode: "solid", bg: "#F4F6F8",
     eyeColorMode: "custom", eyeFrameColor: "#2E6BE6", eyeBallColor: "#1D2733",
     eyePerCorner: false, logo: null, logoText: "", frame: "none", noise: 0,
     falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0, glow: false, shadow: false
@@ -110,21 +109,21 @@ const PRESETS = {
     shape: "fluid", scale: 1, radius: 0.6,
     eyeFrame: "rounded", eyeFrameR: 0.4, eyeBall: "rounded", eyeBallR: 0.5,
     eyeColorMode: "inherit", fgMode: "solid", fg: "#14181D",
-    bgMode: "solid", bg: "#EFEDE6", quiet: 4, canvasRadius: 0, noise: 0.18,
+    bgMode: "solid", bg: "#EFEDE6", quiet: 4, noise: 0.18,
     falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0,
     logo: null, logoText: "", frame: "none", shadow: false, glow: false, stroke: 0
   },
   "Gradient": {
     shape: "rounded", scale: 0.9, radius: 0.55,
     fgMode: "linear", gA: "#7B2FF7", gB: "#F107A3", gUseThird: true, gC: "#2E6BE6",
-    gAngle: 135, gScope: "code", bgMode: "solid", bg: "#0E0B16", canvasRadius: 20,
+    gAngle: 135, gScope: "code", bgMode: "solid", bg: "#0E0B16",
     eyeFrame: "leaf", eyeFrameR: 0.5, eyeBall: "circle", eyeColorMode: "inherit",
     noise: 0, frame: "none", shadow: false, glow: false, stroke: 0,
     logo: null, logoText: "", falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0
   },
   "Neon": {
     shape: "circle", scale: 0.68, fgMode: "solid", fg: "#54F0C8",
-    bgMode: "solid", bg: "#08131A", canvasRadius: 16,
+    bgMode: "solid", bg: "#08131A",
     glow: true, glowColor: "#1BE8B0", glowBlur: 5, shadow: false,
     eyeFrame: "circle", eyeBall: "circle", eyeColorMode: "custom",
     eyeFrameColor: "#FF4D9D", eyeBallColor: "#54F0C8", eyePerCorner: false,
@@ -137,7 +136,7 @@ const PRESETS = {
     eyeColorMode: "inherit", frame: "bottom", frameColor: "#B32B58",
     frameWidth: 0, framePad: 16, frameRadius: 8, caption: "SCAN FOR ENTRY",
     captionColor: "#FFFFFF", captionSize: 15, captionWeight: 800, captionSpacing: 0.18,
-    noise: 0, canvasRadius: 0, logo: null, logoText: "", shadow: false, glow: false,
+    noise: 0, logo: null, logoText: "", shadow: false, glow: false,
     stroke: 0, falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0
   },
   "Bars": {
@@ -145,7 +144,7 @@ const PRESETS = {
     fgMode: "linear", gA: "#0B6E7F", gB: "#B32B58", gUseThird: false,
     gAngle: 90, gScope: "code", bgMode: "solid", bg: "#F5F5F0",
     eyeFrame: "thin", eyeBall: "square", eyeColorMode: "inherit",
-    canvasRadius: 0, noise: 0, logo: null, logoText: "", frame: "none",
+    noise: 0, logo: null, logoText: "", frame: "none",
     shadow: false, glow: false, stroke: 0,
     falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0
   },
@@ -156,7 +155,7 @@ const PRESETS = {
     bgMode: "solid", bg: "#171512", ecl: 3,
     eyeFrame: "dots", eyeBall: "dots", eyeColorMode: "custom",
     eyeFrameColor: "#F2B705", eyeBallColor: "#B32B58", eyePerCorner: false,
-    noise: 0, canvasRadius: 0, logo: null, logoText: "", frame: "none",
+    noise: 0, logo: null, logoText: "", frame: "none",
     shadow: false, glow: false, stroke: 0
   }
 };

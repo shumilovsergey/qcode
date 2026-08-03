@@ -26,8 +26,7 @@ const SECTIONS = [
 
 { id: "geometry", title: "Geometry", controls: [
   rng("cell", "Module size", 2, 40, 1, { unit: "px" }),
-  rng("quiet", "Quiet zone", 0, 12, 1, { unit: " mod" }),
-  rng("canvasRadius", "Canvas corner radius", 0, 80, 1, { unit: "px" })
+  rng("quiet", "Quiet zone", 0, 12, 1, { unit: " mod" })
 ]},
 
 { id: "modules", title: "Module shape", open: true, controls: [

@@ -218,10 +218,13 @@ function buildSVG() {
   }
   if (S.bgImage) {
     defs += `<clipPath id="bgclip"><rect x="${n2(codeX)}" y="${n2(codeY)}" ` +
-            `width="${n2(codePx)}" height="${n2(codePx)}" rx="${S.canvasRadius}"/></clipPath>`;
+            `width="${n2(codePx)}" height="${n2(codePx)}"/></clipPath>`;
   }
 
-  /* ---- background ---- */
+  /* ---- background ----
+     Deliberately square. Rounding here cuts four notches out of the plate that
+     show whatever sits behind the code, so the background never matches the
+     surface it is placed on. Rounding belongs to the shapes drawn on top. */
   let bg = "";
   if (S.bgMode !== "none") {
     /* Framed, the background becomes a plate behind the whole composition —
@@ -229,7 +232,7 @@ function buildSVG() {
     const bx = hasFrame ? fw : codeX, by = hasFrame ? fw : codeY;
     const bw = hasFrame ? W - 2 * fw : codePx, bh = hasFrame ? H - 2 * fw : codePx;
     bg += `<rect x="${n2(bx)}" y="${n2(by)}" width="${n2(bw)}" height="${n2(bh)}"` +
-          ` rx="${S.canvasRadius}" fill="${S.bgMode === "linear" ? "url(#bgg)" : BG}"/>`;
+          ` fill="${S.bgMode === "linear" ? "url(#bgg)" : BG}"/>`;
   }
   if (S.bgImage) {
     bg += `<g clip-path="url(#bgclip)" opacity="${n2(S.bgImgOpacity)}"` +
@@ -239,7 +242,7 @@ function buildSVG() {
   }
   if (S.noise > 0) {
     bg += `<rect x="${n2(codeX)}" y="${n2(codeY)}" width="${n2(codePx)}" height="${n2(codePx)}"` +
-          ` rx="${S.canvasRadius}" filter="url(#fnz)" opacity="${n2(S.noise)}"` +
+          ` filter="url(#fnz)" opacity="${n2(S.noise)}"` +
           ` style="mix-blend-mode:multiply"/>`;
   }
 
