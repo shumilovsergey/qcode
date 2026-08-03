@@ -54,9 +54,43 @@ const DEFAULTS = {
 
 const S = Object.assign({}, DEFAULTS);
 
+/* icons/nom-nom.svg inlined so the preset carries its own logo — a file input
+   cannot be populated from script, and the point of a preset is one click. */
+const NOMNOM_ICON = "data:image/svg+xml," + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">' +
+  '<rect width="64" height="64" rx="15" fill="#211C18"/>' +
+  '<circle cx="32" cy="33" r="19" fill="none" stroke="#B43E2C" stroke-width="9"/>' +
+  '<circle cx="32" cy="33" r="9" fill="none" stroke="#BE8A60" stroke-width="5"/>' +
+  '<circle cx="17" cy="17" r="8.5" fill="#211C18"/></svg>');
+
 /* Presets are partial — they reset only the keys they care about, so a preset
    never silently drops your payload or module size. */
 const PRESETS = {
+  /* nom-nom: the calorie tracker's own palette. Modules are dots because the
+     product's hero shape is a ring of them; the foreground runs cream at the
+     centre out to salmon at the rim, which is the donut read outward. The
+     salmon rim sits at 4.6:1 on the card colour — the floor a scanner wants —
+     so the gradient never darkens past it. Level H carries the centre logo. */
+  "nom-nom": {
+    text: "https://nom-nom.sh-development.ru/",
+    ecl: 3, minver: 0, mask: -1,
+    cell: 10, quiet: 4, canvasRadius: 28,
+    shape: "circle", scale: 0.86, mergeRuns: true,
+    falloff: "none", jitterRot: 0, jitterScale: 0, jitterPos: 0,
+    eyeFrame: "circle", eyeBall: "circle",
+    eyeColorMode: "custom", eyeFrameColor: "#C8695A", eyeBallColor: "#E9CFA9",
+    eyePerCorner: false, alignOverride: false,
+    fgMode: "radial", gA: "#EFDCC4", gB: "#C8695A", gUseThird: false,
+    gScope: "code", fgOpacity: 1, invert: false,
+    bgMode: "solid", bg: "#211C18",
+    logo: NOMNOM_ICON, logoText: "", logoSize: 0.25, logoPad: 0.03,
+    logoBackdrop: "none", logoBorder: 0, logoRot: 0, logoOpacity: 1,
+    logoGray: false, excavate: true,
+    noise: 0, stroke: 0, shadow: false, glow: false,
+    frame: "bar", frameColor: "#B4472F", frameWidth: 0, framePad: 18, frameRadius: 20,
+    caption: "nom-nom", captionColor: "#FFFFFF", captionSize: 30,
+    captionWeight: 800, captionSpacing: 0
+  },
   "Spec default": {
     shape: "square", scale: 1, radius: 0, eyeFrame: "square", eyeBall: "square",
     eyeColorMode: "inherit", fgMode: "solid", fg: "#000000", fgOpacity: 1,

@@ -10,7 +10,7 @@ const sel = (id, label, opts, extra) => Object.assign({ id, label, type: "select
 const rng = (id, label, min, max, step, extra) =>
   Object.assign({ id, label, type: "range", min, max, step }, extra || {});
 
-const CAPTION_ON = s => ["bottom", "top", "pill"].includes(s.frame);
+const CAPTION_ON = s => ["bottom", "top", "pill", "bar"].includes(s.frame);
 
 const SECTIONS = [
 { id: "payload", title: "Payload", open: true, controls: [
@@ -146,7 +146,7 @@ const SECTIONS = [
 { id: "frame", title: "Frame & caption", controls: [
   sel("frame", "Frame", [
     ["none", "None"], ["border", "Border only"], ["bottom", "Caption below"],
-    ["top", "Caption above"], ["pill", "Pill badge below"]]),
+    ["top", "Caption above"], ["pill", "Pill badge below"], ["bar", "Label bar below"]]),
   { id: "frameColor", label: "Frame colour", type: "color", when: s => s.frame !== "none" },
   rng("frameWidth", "Frame thickness", 0, 20, 1, { unit: "px", when: s => s.frame !== "none" }),
   rng("framePad", "Frame padding", 0, 40, 1, { unit: "px", when: s => s.frame !== "none" }),

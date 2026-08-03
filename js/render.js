@@ -26,8 +26,11 @@ function buildSVG() {
   const hasFrame = S.frame !== "none";
   const fw = hasFrame ? S.frameWidth : 0;
   const fp = hasFrame ? S.framePad : 0;
-  const capOn = ["bottom", "top", "pill"].includes(S.frame);
-  const capH = capOn ? S.captionSize * 2.1 : 0;
+  const capOn = ["bottom", "top", "pill", "bar"].includes(S.frame);
+  /* The bar is a detached block rather than a band welded to the code, so it
+     carries its own gap — one padding unit — above itself. */
+  const barH = S.captionSize * 2.4;
+  const capH = S.frame === "bar" ? barH + fp : capOn ? S.captionSize * 2.1 : 0;
   const W = codePx + 2 * (fw + fp);
   const H = codePx + 2 * (fw + fp) + capH;
   const codeX = fw + fp;
@@ -221,7 +224,11 @@ function buildSVG() {
   /* ---- background ---- */
   let bg = "";
   if (S.bgMode !== "none") {
-    bg += `<rect x="${n2(codeX)}" y="${n2(codeY)}" width="${n2(codePx)}" height="${n2(codePx)}"` +
+    /* Framed, the background becomes a plate behind the whole composition —
+       otherwise the padding and anything sitting in it float on transparency. */
+    const bx = hasFrame ? fw : codeX, by = hasFrame ? fw : codeY;
+    const bw = hasFrame ? W - 2 * fw : codePx, bh = hasFrame ? H - 2 * fw : codePx;
+    bg += `<rect x="${n2(bx)}" y="${n2(by)}" width="${n2(bw)}" height="${n2(bh)}"` +
           ` rx="${S.canvasRadius}" fill="${S.bgMode === "linear" ? "url(#bgg)" : BG}"/>`;
   }
   if (S.bgImage) {
@@ -254,6 +261,16 @@ function buildSVG() {
                 ` font-weight="${S.captionWeight}" letter-spacing="${n2(S.captionSpacing * S.captionSize)}"` +
                 `>${esc(S.caption)}</text>`;
     }
+    if (S.frame === "bar") {
+      const bx = fw + fp, by = H - fw - fp - barH, bw = W - 2 * (fw + fp);
+      frame += `<rect x="${n2(bx)}" y="${n2(by)}" width="${n2(bw)}" height="${n2(barH)}"` +
+               ` rx="${n2(Math.min(S.frameRadius, barH / 2))}" fill="${S.frameColor}"/>`;
+      caption = `<text x="${n2(W / 2)}" y="${n2(by + barH / 2 + S.captionSize * 0.35)}"` +
+                ` text-anchor="middle" fill="${S.captionColor}" font-family="${CAPTION_FONT}"` +
+                ` font-size="${S.captionSize}" font-weight="${S.captionWeight}"` +
+                ` letter-spacing="${n2(S.captionSpacing * S.captionSize)}">${esc(S.caption)}</text>`;
+    }
+
     if (S.frame === "pill") {
       const pw = Math.max(S.caption.length * S.captionSize * 0.72, 80);
       const ph = capH * 0.78;
