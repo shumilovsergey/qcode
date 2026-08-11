@@ -1,2 +1,18 @@
-./claude
-backup
+.env
+.DS_Store
+.claude/settings.local.json
+
+# runtime data (SQLite lives in ./data via the dev-compose mount)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# air build artifacts
+build/tmp/
+
+# skeleton working files
+skeleton/backup/
+
+.claude
+CLAUDE.md

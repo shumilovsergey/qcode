@@ -1,0 +1,637 @@
+/* ════════════════════════════════════════════════════════════════════════
+   qcode — all styles
+   Sections:  VARIABLES · BASE · BACKGROUND · NAVBAR · LOGIN · APP · ERROR
+   App-specific styling lives under the APP section at the bottom.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── VARIABLES ───────────────────────────────────────────────────────────
+   Shared palette — build new UI with these instead of hardcoded colors. */
+:root {
+  /* page background — the skeleton's dark --paper, shared by chrome and app */
+  --paper: #121417;
+
+  --bg: #0c0c12;
+  --card: #111120;
+  --border:        rgba(255, 255, 255, 0.14);
+  --border-active: rgba(255, 255, 255, 0.42);
+  --text:          rgba(255, 255, 255, 0.82);
+  --text-dim:      rgba(255, 255, 255, 0.45);
+  --accent:        rgba(255, 255, 255, 0.95);
+  --neon:          #ffffff;
+
+  --ok:   #4ade80;   /* online  */
+  --warn: #fbbf24;   /* partial */
+  --bad:  #f87171;   /* offline / error */
+}
+
+/* ── BASE ────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+button { background: none; border: none; cursor: pointer; font: inherit; color: inherit; }
+
+body {
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  color: var(--text);
+}
+
+/* ── BACKGROUND ──────────────────────────────────────────────────────────
+   Flat ink-dark sheet — the skeleton's --paper. No image, nothing to load.
+   The frosted chrome (navbar, popover, login card) sits directly on it. */
+
+html { background: var(--paper); }
+body { background: transparent; }
+
+/* ── NAVBAR ─────────────────────────────────────────────────────────────── */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+}
+
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 5px;
+  gap: 2px;
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+}
+
+/* icon variant:
+.tab {
+  padding: 0 6px;
+}
+*/
+
+.tab {
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 18px;
+  color: rgba(255, 255, 255, 0.40);
+  font-family: inherit;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.tab:hover { color: rgba(255, 255, 255, 0.75); }
+.tab.active { background: rgba(255, 255, 255, 0.12); color: rgba(255, 255, 255, 0.92); }
+
+.profile-area { position: relative; }
+
+.profile-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition: border-color .15s, color .15s;
+}
+
+.profile-btn:hover,
+.profile-btn.open { border-color: rgba(255, 255, 255, 0.80); color: rgba(255, 255, 255, 1); }
+
+.profile-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 256px;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 14px;
+  z-index: 101;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+}
+
+.profile-popover.open { display: flex; }
+
+.pi-info { display: flex; flex-direction: column; gap: 3px; }
+.pi-label { font-size: 10px; color: rgba(255, 255, 255, 0.45); letter-spacing: .1em; text-transform: uppercase; }
+.pi-name  { color: rgba(255, 255, 255, 0.92); word-break: break-all; }
+.pi-sub   { font-size: 11px; color: rgba(255, 255, 255, 0.45); word-break: break-all; }
+
+/* grouped action list: ONE rounded box, rows divided by hairlines */
+.pi-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pi-action {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+/* divider only BETWEEN rows, never on the first one */
+.pi-action + .pi-action { border-top: 1px solid rgba(255, 255, 255, 0.10); }
+
+.pi-action:hover { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.95); }
+
+.pi-logout       { color: #ff9f9f; }
+.pi-logout:hover { color: #ffbfbf; background: rgba(255, 80, 80, 0.12); }
+
+/* ── LOGIN ───────────────────────────────────────────────────────────────── */
+
+.login-screen {
+  position: relative;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 24px 20px;
+}
+
+/* card sits in the top flex zone, centered within it */
+.login-card-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.login-card {
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+  border-radius: 16px;
+  padding: 44px 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+}
+
+.login-logo {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.login-domain {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.40);
+  text-decoration: none;
+  letter-spacing: .04em;
+  margin-bottom: 36px;
+  transition: color .15s;
+  display: block;
+}
+
+.login-domain:hover { color: rgba(255, 255, 255, 0.75); }
+
+.login-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.login-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-active);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* app description under the login card */
+.app-about {
+  position: relative;
+  z-index: 2;
+  max-width: 380px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.40);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  padding-bottom: 20px;
+}
+
+.login-divider {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  align-items: center;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.login-divider-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: transparent;
+  flex-shrink: 0;
+  margin: 0 -1px; /* lines run flush to circle edge */
+}
+
+/* ── APP ─────────────────────────────────────────────────────────────────
+   Logged-in content area. One .panel per navbar tab, exactly one visible.
+   Panels are transparent — the flat --paper sheet shows through the gutters. */
+
+.app-content { min-height: calc(100vh - 86px); }
+
+/* .panel[hidden] (0,2,0) outranks .panel-empty (0,1,0), so hiding always wins.
+   Never set `display` on a panel's #id — that would outrank both. */
+.panel[hidden] { display: none; }
+
+.panel-empty {
+  min-height: calc(100vh - 86px);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 36px;
+  letter-spacing: .2em;
+  font-style: italic;
+}
+
+/* ── APP · QR LAB (.qr-scope) ──────────────────────────────────────────
+   Ported from skeleton/css/style.css. Palette is a prepress proofing sheet:
+   ink-dark paper, registration magenta as the single accent, process cyan as
+   its second — the skeleton's own dark variant, values unchanged.
+
+   Everything is scoped to .qr-scope on purpose: the skeleton reuses names
+   the chrome also owns (--accent, --warn, --bad) and resets bare `button` /
+   `select` / `textarea`. Unscoped, it would restyle the navbar and popover.
+   The light half of the palette still lives in skeleton/css/style.css.
+   ──────────────────────────────────────────────────────────────────────── */
+
+.qr-scope {
+  --paper:#121417; --panel:#191C20; --sunk:#0E1013;
+  --ink:#E7E9E3; --ink2:#99A0A7; --ink3:#6A7178;
+  --rule:#2B2F34; --rule2:#212529;
+  --accent:#E4628A; --cyan:#54C2D2;
+  --good:#5FB37E; --warn:#D5A441; --bad:#E0705A;
+  --mono: ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans: -apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",sans-serif;
+
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.qr-scope button { font: inherit; cursor: pointer; border-radius: 0; }
+
+.qr-scope .wrap { max-width: 1500px; margin: 0 auto; padding: 0 20px 80px; }
+
+/* ---------- masthead ---------- */
+.qr-scope .top {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  padding: 8px 0 14px; border-bottom: 1px solid var(--ink); flex-wrap: wrap;
+}
+.qr-scope .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.qr-scope .brand h1 {
+  font-family: var(--mono); font-size: 19px; font-weight: 600; letter-spacing: -.02em;
+  margin: 0; text-transform: uppercase;
+}
+.qr-scope .brand h1 em { font-style: normal; color: var(--accent); }
+.qr-scope .brand p { margin: 0; color: var(--ink2); font-size: 13px; max-width: 52ch; }
+.qr-scope .topmeta {
+  display: flex; gap: 18px; align-items: center; font-family: var(--mono);
+  font-size: 10.5px; letter-spacing: .11em; text-transform: uppercase; color: var(--ink3);
+}
+.qr-scope .topmeta b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---------- layout ---------- */
+.qr-scope .lab {
+  display: grid; grid-template-columns: minmax(0,1fr) 396px;
+  gap: 26px; align-items: start; padding-top: 22px;
+}
+@media (max-width: 1080px) { .qr-scope .lab { grid-template-columns: 1fr; } }
+
+/* ---------- preview stage ---------- */
+.qr-scope .stagecol { position: sticky; top: 16px; }
+@media (max-width: 1080px) { .qr-scope .stagecol { position: static; } }
+
+.qr-scope .stage {
+  position: relative; background: var(--panel); border: 1px solid var(--rule);
+  padding: 34px; display: flex; align-items: center; justify-content: center;
+  min-height: 380px; overflow: auto;
+  background-image:
+    linear-gradient(var(--rule2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule2) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: -1px -1px;
+}
+.qr-scope .stage svg {
+  max-width: 100%; height: auto; display: block;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 10px 30px -12px rgba(0,0,0,.30);
+}
+.qr-scope .stage .err {
+  font-family: var(--mono); font-size: 12px; color: var(--bad);
+  max-width: 34ch; text-align: center; line-height: 1.6;
+}
+
+/* registration crosshairs — prepress marks, decorative */
+.qr-scope .reg { position: absolute; width: 16px; height: 16px; color: var(--accent); opacity: .7; pointer-events: none; }
+.qr-scope .reg::before,
+.qr-scope .reg::after { content: ""; position: absolute; background: currentColor; }
+.qr-scope .reg::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-.5px); }
+.qr-scope .reg::after { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-.5px); }
+.qr-scope .reg.tl { top: 8px; left: 8px; }
+.qr-scope .reg.tr { top: 8px; right: 8px; }
+.qr-scope .reg.bl { bottom: 8px; left: 8px; }
+.qr-scope .reg.br { bottom: 8px; right: 8px; }
+
+/* ---------- readout strip ---------- */
+.qr-scope .readout {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(94px,1fr));
+  border: 1px solid var(--rule); border-top: 0; background: var(--panel);
+}
+.qr-scope .rcell { padding: 9px 12px; border-right: 1px solid var(--rule2); }
+.qr-scope .rcell:last-child { border-right: 0; }
+.qr-scope .rcell span {
+  display: block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink3); margin-bottom: 3px;
+}
+.qr-scope .rcell b {
+  font-family: var(--mono); font-size: 14px; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- diagnostics ---------- */
+.qr-scope .diag { margin-top: 14px; }
+.qr-scope .verdict {
+  display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
+  font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
+  padding: 3px 8px; border: 1px solid currentColor; border-radius: 999px;
+}
+.qr-scope .v-good { color: var(--good); }
+.qr-scope .v-warn { color: var(--warn); }
+.qr-scope .v-bad  { color: var(--bad); }
+.qr-scope .notes { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.qr-scope .notes li { font-size: 12.5px; color: var(--ink2); padding-left: 14px; position: relative; max-width: 70ch; }
+.qr-scope .notes li::before {
+  content: ""; position: absolute; left: 0; top: 8px; width: 6px; height: 1px; background: var(--accent);
+}
+
+/* ---------- buttons ---------- */
+.qr-scope .exportbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
+.qr-scope .btn {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+  padding: 8px 13px; border: 1px solid var(--ink); background: transparent; color: var(--ink);
+  transition: background .12s, color .12s;
+}
+.qr-scope .btn:hover { background: var(--ink); color: var(--paper); }
+.qr-scope .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.qr-scope .btn.primary:hover { filter: brightness(1.1); background: var(--accent); color: #fff; }
+.qr-scope .btn:focus-visible,
+.qr-scope select:focus-visible,
+.qr-scope input:focus-visible,
+.qr-scope textarea:focus-visible,
+.qr-scope summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.qr-scope .presets { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 18px; }
+.qr-scope .preset {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 10px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink2);
+  transition: border-color .12s, color .12s;
+}
+.qr-scope .preset:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- control rack ---------- */
+.qr-scope .rack { display: flex; flex-direction: column; border: 1px solid var(--rule); background: var(--panel); }
+.qr-scope .sec { border-bottom: 1px solid var(--rule2); }
+.qr-scope .sec:last-child { border-bottom: 0; }
+.qr-scope .sec > summary {
+  list-style: none; cursor: pointer; padding: 11px 14px; display: flex; align-items: center; gap: 9px;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink); user-select: none;
+}
+.qr-scope .sec > summary::-webkit-details-marker { display: none; }
+.qr-scope .sec > summary::before { content: "+"; font-size: 12px; color: var(--accent); width: 9px; flex: none; line-height: 1; }
+.qr-scope .sec[open] > summary::before { content: "\2013"; }
+.qr-scope .sec[open] > summary { border-bottom: 1px solid var(--rule2); }
+.qr-scope .sec > summary .count {
+  margin-left: auto; color: var(--ink3); letter-spacing: .06em; font-variant-numeric: tabular-nums;
+}
+.qr-scope .sec .body { padding: 12px 14px 16px; display: flex; flex-direction: column; gap: 11px; background: var(--sunk); }
+
+.qr-scope .ctl { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; align-items: center; }
+.qr-scope .ctl.hide { display: none; }
+.qr-scope .ctl.stack { grid-template-columns: 1fr; }
+.qr-scope .ctl > label { font-size: 12.5px; color: var(--ink2); }
+.qr-scope .ctl .val {
+  font-family: var(--mono); font-size: 11px; color: var(--ink);
+  font-variant-numeric: tabular-nums; min-width: 48px; text-align: right;
+}
+.qr-scope .ctl input[type=range] { grid-column: 1/-1; width: 100%; accent-color: var(--accent); height: 18px; margin: 0; }
+.qr-scope .divider { height: 1px; background: var(--rule2); margin: 4px 0; }
+
+.qr-scope select,
+.qr-scope input[type=text],
+.qr-scope textarea {
+  font: inherit; font-size: 12.5px; padding: 5px 7px; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: 0; max-width: 180px;
+}
+.qr-scope textarea { width: 100%; max-width: none; resize: vertical; font-family: var(--mono); font-size: 12px; min-height: 58px; }
+.qr-scope input[type=color] {
+  width: 38px; height: 26px; padding: 1px; border: 1px solid var(--rule);
+  background: var(--panel); cursor: pointer;
+}
+.qr-scope input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.qr-scope input[type=file] { font-size: 11px; max-width: 180px; color: var(--ink2); }
+.qr-scope .swatches { display: flex; gap: 5px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ── ERROR ───────────────────────────────────────────────────────────────── */
+
+.error-banner {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(70, 30, 30, .9);
+  border: 1px solid #5c2e2e;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #e87a7a;
+  font-size: 12px;
+  z-index: 200;
+  white-space: nowrap;
+  max-width: calc(100vw - 32px);
+  backdrop-filter: blur(8px);
+}
+
+/* ── APP · COLLECTION (#panel-qcode) ──────────────────────────────────────
+   Card grid of saved codes. Same prepress language as the rack: flat panels,
+   hairline rules, mono labels, magenta only where it earns attention. */
+
+/* the collection has no masthead — just the create action above the rule */
+.qr-scope .top-create { justify-content: center; padding: 18px 0 22px; }
+
+.qr-scope .btn-create { font-size: 13px; letter-spacing: .12em; padding: 15px 52px; }
+
+.qr-scope .codes-status { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--bad); min-height: 16px; }
+
+.qr-scope .card-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px; padding-top: 8px;
+}
+
+.qr-scope .card { border: 1px solid var(--rule); background: var(--panel); display: flex; flex-direction: column; }
+
+.qr-scope .card-thumb {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  padding: 18px; background: var(--sunk); border-bottom: 1px solid var(--rule2); overflow: hidden;
+}
+.qr-scope .card-thumb svg { max-width: 100%; max-height: 100%; height: auto; display: block; }
+.qr-scope .card-spin { font-family: var(--mono); font-size: 18px; color: var(--ink3); }
+.qr-scope .card-err  { font-family: var(--mono); font-size: 11px; color: var(--bad); text-align: center; }
+
+.qr-scope .card-body { padding: 11px 13px 13px; display: flex; flex-direction: column; gap: 3px; }
+.qr-scope .card-name { font-size: 13.5px; font-weight: 600; color: var(--ink); word-break: break-word; }
+.qr-scope .card-date { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--ink3); }
+
+.qr-scope .card-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+.qr-scope .cbtn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 8px; border: 1px solid var(--rule); background: transparent; color: var(--ink2);
+  transition: border-color .12s, color .12s;
+}
+.qr-scope .cbtn:hover { border-color: var(--accent); color: var(--accent); }
+.qr-scope .cbtn-danger:hover { border-color: var(--bad); color: var(--bad); }
+
+.qr-scope .codes-empty { padding: 60px 0; text-align: center; color: var(--ink2); }
+.qr-scope .codes-empty .sub { margin-top: 6px; font-size: 12.5px; color: var(--ink3); }
+
+/* ── APP · SAVE BAR (.qr-scope, editor only) ─────────────────────────────── */
+
+.qr-scope .savebar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding: 11px 13px; border: 1px solid var(--rule); background: var(--panel);
+}
+.qr-scope .savebar-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink3);
+}
+.qr-scope .savebar-name {
+  flex: 1; min-width: 160px; max-width: 340px;
+  font: inherit; font-size: 13px; padding: 6px 9px;
+  background: var(--sunk); color: var(--ink); border: 1px solid var(--rule); border-radius: 0;
+}
+.qr-scope .dirty { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; }
+.qr-scope .save-status {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+  color: var(--ink3); margin-left: auto;
+}
+.qr-scope .save-status.bad { color: var(--bad); }
+
+/* ── APP · MODAL ──────────────────────────────────────────────────────────
+   Unsaved-changes gate, rename and delete. Lives outside .qr-scope, so it
+   carries its own copy of the few tokens it needs. */
+
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.modal-backdrop[hidden] { display: none; }
+
+.modal {
+  width: 100%; max-width: 400px; padding: 22px;
+  background: #191C20; border: 1px solid #2B2F34;
+  display: flex; flex-direction: column; gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+}
+.modal-msg { font-size: 14px; line-height: 1.55; color: #E7E9E3; }
+.modal-input {
+  font: inherit; font-size: 13px; padding: 8px 10px;
+  background: #0E1013; color: #E7E9E3; border: 1px solid #2B2F34; border-radius: 0;
+}
+.modal-input[hidden] { display: none; }
+.modal-input:focus-visible { outline: 2px solid #E4628A; outline-offset: 2px; }
+
+.modal-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.modal-buttons .btn {
+  font-family: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+  padding: 8px 13px; border: 1px solid #E7E9E3; background: transparent; color: #E7E9E3;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.modal-buttons .btn:hover { background: #E7E9E3; color: #121417; }
+.modal-buttons .btn.primary { background: #E4628A; border-color: #E4628A; color: #fff; }
+.modal-buttons .btn.primary:hover { filter: brightness(1.1); background: #E4628A; color: #fff; }
+.modal-buttons .btn.danger { border-color: #E0705A; color: #E0705A; }
+.modal-buttons .btn.danger:hover { background: #E0705A; color: #121417; }

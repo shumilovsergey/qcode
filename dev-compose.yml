@@ -1,0 +1,15 @@
+services:
+  qcode:
+    build:
+      context: .
+      target: dev
+    ports:
+      - "8890:8890"
+    env_file: .env
+    volumes:
+      - ./build:/app          # source bind mount → Air rebuilds on host edits
+      - ./data:/data          # persisted SQLite (DB_PATH=/data/qcode.db)
+      - go-cache:/root/go/pkg/mod
+
+volumes:
+  go-cache:

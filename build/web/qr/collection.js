@@ -1,0 +1,222 @@
+/* ==========================================================================
+   collection.js — the qcode tab: cards for every saved code, plus the
+   unsaved-changes gate that guards leaving a dirty editor.
+   Loaded last; uses the globals from app.js and store.js.
+   ========================================================================== */
+
+const grid       = document.getElementById("code-grid");
+const emptyState = document.getElementById("codes-empty");
+const listStatus = document.getElementById("codes-status");
+
+const paramCache = new Map(); // id -> params, so download never refetches
+
+/* ---------- modal ----------
+   A styled dialog rather than confirm(), so the unsaved-changes prompt can
+   offer a real third choice — cancel the navigation and stay put. */
+const modal      = document.getElementById("modal");
+const modalMsg   = document.getElementById("modal-msg");
+const modalInput = document.getElementById("modal-input");
+const modalBtns  = document.getElementById("modal-buttons");
+let   modalDone  = null;
+
+function closeModal(value) {
+  if (!modalDone) return;
+  const done = modalDone;
+  modalDone = null;
+  modal.hidden = true;
+  done(value);
+}
+
+/* buttons: [{ value, label, cls }] — the first is the default action. */
+function showModal({ message, buttons, input }) {
+  modalMsg.textContent = message;
+  modalBtns.innerHTML = "";
+
+  modalInput.hidden = !input;
+  if (input) modalInput.value = input.value || "";
+
+  for (const b of buttons) {
+    const el = document.createElement("button");
+    el.className = "btn" + (b.cls ? " " + b.cls : "");
+    el.textContent = b.label;
+    el.addEventListener("click", () =>
+      closeModal(input ? { action: b.value, text: modalInput.value.trim() } : b.value));
+    modalBtns.appendChild(el);
+  }
+
+  modal.hidden = false;
+  (input ? modalInput : modalBtns.firstChild).focus();
+  if (input) modalInput.select();
+
+  return new Promise(res => { modalDone = res; });
+}
+
+modal.addEventListener("click", e => { if (e.target === modal) closeModal(null); });
+document.addEventListener("keydown", e => {
+  if (modal.hidden) return;
+  if (e.key === "Escape") closeModal(null);
+  if (e.key === "Enter" && !modalInput.hidden) modalBtns.firstChild.click();
+});
+
+/* ---------- the unsaved-changes gate ----------
+   Returns true if it is safe to leave the current editor state behind. */
+async function confirmLeave() {
+  if (!isDirty()) return true;
+  const choice = await showModal({
+    message: `Unsaved changes in “${currentName}”. Save them?`,
+    buttons: [
+      { value: "save",    label: "Save", cls: "primary" },
+      { value: "discard", label: "Don't save" }
+    ]
+  });
+  if (choice === "save") {
+    try { await saveCurrent(); } catch { return false; }
+    return true;
+  }
+  return choice === "discard"; // null (Esc / backdrop) → stay put
+}
+
+/* ---------- tabs ----------
+   Reuse the switching already wired in script.js by clicking the real tab. */
+const goTo = id => document.querySelector(`.tab[data-target="${id}"]`).click();
+
+/* ---------- cards ---------- */
+function cardEl(c) {
+  const el = document.createElement("article");
+  el.className = "card";
+  el.dataset.id = c.id;
+  el.innerHTML = `
+    <div class="card-thumb"><span class="card-spin">…</span></div>
+    <div class="card-body">
+      <h3 class="card-name">${esc(c.name)}</h3>
+      <div class="card-date">${new Date(c.updated_at).toLocaleString()}</div>
+      <div class="card-actions">
+        <button class="cbtn" data-act="edit">edit</button>
+        <button class="cbtn" data-act="rename">rename</button>
+        <button class="cbtn" data-act="svg">svg</button>
+        <button class="cbtn" data-act="png">png</button>
+        <button class="cbtn cbtn-danger" data-act="delete">delete</button>
+      </div>
+    </div>`;
+  return el;
+}
+
+/* Thumbnails are drawn only once a card scrolls into view. The list endpoint
+   deliberately omits params, so this is what keeps browsing cheap no matter
+   how large an embedded logo is. */
+const seen = new IntersectionObserver(async (entries) => {
+  for (const en of entries) {
+    if (!en.isIntersecting) continue;
+    seen.unobserve(en.target);
+    const id = Number(en.target.dataset.id);
+    const thumb = en.target.querySelector(".card-thumb");
+    try {
+      const params = await paramsFor(id);
+      const out = renderWith(params);
+      thumb.innerHTML = out.error
+        ? `<span class="card-err">${esc(out.error)}</span>`
+        : out.svg;
+    } catch (e) {
+      thumb.innerHTML = `<span class="card-err">${esc(e.message)}</span>`;
+    }
+  }
+}, { rootMargin: "200px" });
+
+async function paramsFor(id) {
+  if (!paramCache.has(id)) paramCache.set(id, (await api.get(id)).params);
+  return paramCache.get(id);
+}
+
+async function refreshCards() {
+  if (!grid) return;
+  let codes;
+  try {
+    codes = await api.list();
+  } catch (e) {
+    listStatus.textContent = e.message;
+    return;
+  }
+  listStatus.textContent = "";
+  grid.innerHTML = "";
+  emptyState.hidden = codes.length > 0;
+
+  for (const c of codes) {
+    const el = cardEl(c);
+    grid.appendChild(el);
+    seen.observe(el);
+  }
+}
+
+/* ---------- card actions ---------- */
+grid.addEventListener("click", async e => {
+  const btn = e.target.closest(".cbtn");
+  if (!btn) return;
+  const card = btn.closest(".card");
+  const id   = Number(card.dataset.id);
+  const name = card.querySelector(".card-name").textContent;
+
+  switch (btn.dataset.act) {
+    case "edit": {
+      if (id === currentId) { goTo("panel-manual"); return; }
+      if (!await confirmLeave()) return;
+      try { await loadCode(id); } catch (err) { listStatus.textContent = err.message; return; }
+      await refreshCards();
+      goTo("panel-manual");
+      break;
+    }
+    case "rename": {
+      const r = await showModal({
+        message: "Rename this code",
+        input: { value: name },
+        buttons: [{ value: "ok", label: "Rename", cls: "primary" }, { value: "cancel", label: "Cancel" }]
+      });
+      if (!r || r.action !== "ok" || !r.text || r.text === name) return;
+      try {
+        await api.update(id, { name: r.text });
+        if (id === currentId) setEditorMeta(id, r.text);
+        await refreshCards();
+      } catch (err) { listStatus.textContent = err.message; }
+      break;
+    }
+    case "svg":
+    case "png": {
+      try {
+        const out = renderWith(await paramsFor(id));
+        if (out.error) { listStatus.textContent = out.error; return; }
+        btn.dataset.act === "svg" ? downloadSVG(out, name) : downloadPNG(out, name, 2);
+      } catch (err) { listStatus.textContent = err.message; }
+      break;
+    }
+    case "delete": {
+      const ok = await showModal({
+        message: `Delete “${name}”? This cannot be undone.`,
+        buttons: [{ value: "yes", label: "Delete", cls: "danger" }, { value: "no", label: "Cancel" }]
+      });
+      if (ok !== "yes") return;
+      try {
+        await api.remove(id);
+        paramCache.delete(id);
+        // the open editor now points at a row that no longer exists — turn it
+        // into a draft so the next save re-inserts instead of 404-ing
+        if (id === currentId) setEditorMeta(null, currentName);
+        await refreshCards();
+      } catch (err) { listStatus.textContent = err.message; }
+      break;
+    }
+  }
+});
+
+/* ---------- create ---------- */
+document.getElementById("code-create").addEventListener("click", async () => {
+  if (!await confirmLeave()) return;
+  newDraft();
+  goTo("panel-manual");
+});
+
+/* ---------- keep the list fresh when the tab is opened ---------- */
+document.querySelector('.tab[data-target="panel-qcode"]')
+  .addEventListener("click", () => { refreshCards(); });
+
+/* ---------- boot ---------- */
+newDraft();
+refreshCards();

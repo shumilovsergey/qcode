@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qcode</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="qcode" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+{{if .Error}}
+<div class="error-banner">{{.Error}}</div>
+{{end}}
+
+{{if .User}}
+
+<nav class="navbar">
+  <div class="nav-tabs">
+    <button class="tab active" data-target="panel-qcode">qcode</button>
+    <button class="tab" data-target="panel-manual">manual</button>
+    <button class="tab" data-target="panel-ai">ai</button>
+  </div>
+  <div class="profile-area">
+    <button class="profile-btn" id="profileBtn"
+            data-name="{{if .User.Name}}{{.User.Name}}{{else}}{{.User.AuthID}}{{end}}">
+      <span class="profile-initial">?</span>
+    </button>
+    <div class="profile-popover" id="profilePopover">
+      <div class="pi-info">
+        <span class="pi-label">{{.User.Method}}</span>
+        <span class="pi-name">{{if .User.Name}}{{.User.Name}}{{else}}{{.User.AuthID}}{{end}}</span>
+        {{if .User.Name}}<span class="pi-sub">{{.User.AuthID}}</span>{{end}}
+      </div>
+      <div class="pi-list">
+        <a class="pi-action" href="/apps">apps</a>
+        <a class="pi-action" href="https://github.com/shumilovsergey/qcode/blob/main/README.md" target="_blank" rel="noopener">readme</a>
+        <a class="pi-action pi-logout" href="/logout">log out</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="app-content">
+
+  <!-- ── QCODE — the saved collection ───────────────────────────────────── -->
+  <section class="panel qr-scope" id="panel-qcode">
+    <div class="wrap">
+      <header class="top top-create">
+        <button class="btn primary btn-create" id="code-create">Create</button>
+      </header>
+
+      <div class="codes-status" id="codes-status"></div>
+
+      <div class="card-grid" id="code-grid"></div>
+
+      <div class="codes-empty" id="codes-empty" hidden>
+        <p>Nothing saved yet.</p>
+        <p class="sub">Press <b>Create</b> to build your first code.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MANUAL — the QR lab (ported from skeleton/) ─────────────────────── -->
+  <section class="panel qr-scope" id="panel-manual" hidden>
+    <div class="wrap">
+      <header class="top">
+        <div class="brand">
+          <h1>QR&nbsp;<em>Lab</em></h1>
+          <p>Every parameter that can be pushed client-side, with nothing but HTML, CSS and JS. Encoder written from scratch — no library, no build step, no network.</p>
+        </div>
+        <div class="topmeta">
+          <div>Encoder <b>v1&ndash;40</b></div>
+          <div>Deps <b>0</b></div>
+          <div>Params <b id="paramcount">&mdash;</b></div>
+        </div>
+      </header>
+
+      <div class="savebar">
+        <label class="savebar-label" for="code-name">Name</label>
+        <input type="text" id="code-name" class="savebar-name" value="default" autocomplete="off" spellcheck="false" />
+        <span class="dirty" id="code-dirty" hidden title="unsaved changes"></span>
+        <span class="save-status" id="code-status"></span>
+        <button class="btn primary" id="code-save">Save</button>
+      </div>
+
+      <div class="lab">
+        <div class="stagecol">
+          <div class="presets" id="presets"></div>
+
+          <div class="stage">
+            <i class="reg tl"></i><i class="reg tr"></i><i class="reg bl"></i><i class="reg br"></i>
+            <div id="mount"></div>
+          </div>
+
+          <div class="readout">
+            <div class="rcell"><span>Version</span><b id="ro-ver">&mdash;</b></div>
+            <div class="rcell"><span>Grid</span><b id="ro-size">&mdash;</b></div>
+            <div class="rcell"><span>Mask</span><b id="ro-mask">&mdash;</b></div>
+            <div class="rcell"><span>Bytes</span><b id="ro-bytes">&mdash;</b></div>
+            <div class="rcell"><span>Modules</span><b id="ro-mods">&mdash;</b></div>
+            <div class="rcell"><span>Export</span><b id="ro-px">&mdash;</b></div>
+          </div>
+
+          <div class="diag">
+            <div id="verdict"></div>
+            <ul class="notes" id="notes"></ul>
+          </div>
+
+          <div class="exportbar">
+            <button class="btn primary" id="dl-png">Download PNG</button>
+            <select id="pngscale" aria-label="PNG scale">
+              <option value="1">1&times;</option>
+              <option value="2" selected>2&times;</option>
+              <option value="4">4&times;</option>
+              <option value="8">8&times;</option>
+            </select>
+            <button class="btn" id="dl-svg">Download SVG</button>
+            <button class="btn" id="cp-svg">Copy SVG</button>
+            <button class="btn" id="randomize">Randomize</button>
+            <button class="btn" id="reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="rack" id="rack"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AI — parked, built later ───────────────────────────────────────── -->
+  <section class="panel panel-empty" id="panel-ai" hidden>
+    <div class="placeholder">AI</div>
+  </section>
+
+</main>
+
+<!-- ── modal — unsaved changes, rename, delete ───────────────────────────── -->
+<div class="modal-backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <p class="modal-msg" id="modal-msg"></p>
+    <input type="text" class="modal-input" id="modal-input" autocomplete="off" hidden />
+    <div class="modal-buttons" id="modal-buttons"></div>
+  </div>
+</div>
+
+{{else}}
+
+<div class="login-screen">
+
+  <div class="login-card-wrap">
+    <div class="login-card">
+      <div class="login-logo">qcode</div>
+      <a class="login-domain" href="https://sh-development.ru" target="_blank" rel="noopener">sh-development.ru</a>
+      <a class="login-btn" href="/login">войти</a>
+    </div>
+  </div>
+
+  <div class="app-about">
+    <p>Конструктор QR-кодов платформы sh-development. Кодировщик написан с нуля — без библиотек и внешних запросов. Форма модулей, глаза, градиенты, логотип, экспорт в SVG и PNG.</p>
+  </div>
+
+  <div class="login-divider">
+    <span class="login-divider-dot"></span>
+  </div>
+
+</div>
+
+{{end}}
+
+<script src="/script.js"></script>
+{{if .User}}
+<!-- QR engine — only loaded when logged in; it needs the panel DOM -->
+<script src="/qr/encoder.js"></script>
+<script src="/qr/shapes.js"></script>
+<script src="/qr/state.js"></script>
+<script src="/qr/schema.js"></script>
+<script src="/qr/render.js"></script>
+<script src="/qr/app.js"></script>
+<script src="/qr/store.js"></script>
+<script src="/qr/collection.js"></script>
+{{end}}
+</body>
+</html>
