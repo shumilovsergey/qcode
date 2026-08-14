@@ -165,14 +165,21 @@ function syncPanel() {
 }
 
 /* ---------- render ---------- */
+/* qcode's manual tab drops the diagnostics block to give the stage more room,
+   while the standalone lab keeps it — so these two may be absent. */
+const setHTML = (id, html) => {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+};
+
 function render() {
   syncPanel();
   const out = buildSVG();
 
   if (out.error) {
     mount.innerHTML = `<div class="err">${esc(out.error)}</div>`;
-    document.getElementById("verdict").innerHTML = `<span class="verdict v-bad">Cannot encode</span>`;
-    document.getElementById("notes").innerHTML = "";
+    setHTML("verdict", `<span class="verdict v-bad">Cannot encode</span>`);
+    setHTML("notes", "");
     return;
   }
 
@@ -188,12 +195,11 @@ function render() {
   document.getElementById("ro-px").textContent = Math.round(out.w) + "×" + Math.round(out.h);
 
   const { risk, notes } = out.diag;
-  const v = document.getElementById("verdict");
-  if (risk === 0) v.innerHTML = `<span class="verdict v-good">Reads clean</span>`;
-  else if (risk <= 3) v.innerHTML = `<span class="verdict v-warn">Risky — test it</span>`;
-  else v.innerHTML = `<span class="verdict v-bad">Likely unreadable</span>`;
+  if (risk === 0) setHTML("verdict", `<span class="verdict v-good">Reads clean</span>`);
+  else if (risk <= 3) setHTML("verdict", `<span class="verdict v-warn">Risky — test it</span>`);
+  else setHTML("verdict", `<span class="verdict v-bad">Likely unreadable</span>`);
 
-  document.getElementById("notes").innerHTML = notes.map(t => `<li>${esc(t)}</li>`).join("");
+  setHTML("notes", notes.map(t => `<li>${esc(t)}</li>`).join(""));
 }
 
 /* ---------- presets ---------- */

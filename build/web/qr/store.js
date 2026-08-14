@@ -50,6 +50,7 @@ const nameInputs   = savebarAll(".savebar-name");
 const saveBtns     = savebarAll(".savebar-save");
 const dirtyMarks   = savebarAll(".savebar-dirty");
 const saveStatuses = savebarAll(".savebar-status");
+const saveSpins    = savebarAll(".savebar-spin");
 
 const nameValue = () => (nameInputs.length ? nameInputs[0].value.trim() : "");
 
@@ -83,6 +84,7 @@ function setEditorMeta(id, name) {
   baseline = snapshot();
   updateDirty();
   setStatus("");
+  setSpin("");
 }
 
 async function loadCode(id) {
@@ -96,6 +98,8 @@ function newDraft() {
   setEditorMeta(null, "default");
 }
 
+/* The status line is now an error channel only — progress and success are the
+   spinner's job, so nothing writes prose here on the happy path. */
 function setStatus(msg, bad) {
   for (const s of saveStatuses) {
     s.textContent = msg;
@@ -103,10 +107,23 @@ function setStatus(msg, bad) {
   }
 }
 
+/* "busy" spins, "ok" ticks, "" clears. One timer for the whole app: a second
+   save landing during the tick must not be cleared by the first one's timeout. */
+let spinTimer = null;
+function setSpin(state) {
+  clearTimeout(spinTimer);
+  for (const s of saveSpins) {
+    if (state) s.dataset.state = state;
+    else delete s.dataset.state;
+  }
+  if (state === "ok") spinTimer = setTimeout(() => setSpin(""), 1300);
+}
+
 async function saveCurrent() {
   const name = nameValue() || "default";
   const params = JSON.parse(JSON.stringify(S));
-  setStatus("saving…");
+  setStatus("");
+  setSpin("busy");
   try {
     if (currentId === null) {
       const { id } = await api.create(name, params);
@@ -115,15 +132,13 @@ async function saveCurrent() {
       await api.update(currentId, { name, params });
     }
   } catch (e) {
+    setSpin("");
     setStatus(e.message, true);
     throw e;
   }
   paramCache.delete(currentId); // cached params are now stale
-  setEditorMeta(currentId, name);
-  setStatus("saved");
-  setTimeout(() => {
-    if (saveStatuses.some(s => s.textContent === "saved")) setStatus("");
-  }, 1600);
+  setEditorMeta(currentId, name); // clears the spinner along with the status
+  setSpin("ok");
 }
 
 /* ---------- rendering an arbitrary code ----------

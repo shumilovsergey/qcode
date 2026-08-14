@@ -72,6 +72,7 @@
           <span class="dirty savebar-dirty" id="code-dirty" hidden title="unsaved changes"></span>
           <span class="save-status savebar-status" id="code-status"></span>
           <button class="btn primary savebar-save" id="code-save">Save</button>
+          <span class="savebar-spin" id="code-spin" aria-hidden="true"></span>
         </div>
       </header>
 
@@ -91,11 +92,6 @@
             <div class="rcell"><span>Bytes</span><b id="ro-bytes">&mdash;</b></div>
             <div class="rcell"><span>Modules</span><b id="ro-mods">&mdash;</b></div>
             <div class="rcell"><span>Export</span><b id="ro-px">&mdash;</b></div>
-          </div>
-
-          <div class="diag">
-            <div id="verdict"></div>
-            <ul class="notes" id="notes"></ul>
           </div>
 
           <div class="exportbar">
@@ -128,6 +124,7 @@
           <span class="dirty savebar-dirty" id="ai-dirty" hidden title="unsaved changes"></span>
           <span class="save-status savebar-status" id="ai-status"></span>
           <button class="btn primary savebar-save" id="ai-save">Save</button>
+          <span class="savebar-spin" id="ai-spin" aria-hidden="true"></span>
         </div>
       </header>
 
@@ -154,7 +151,39 @@
           <div class="ai-errors" id="ai-errors" hidden></div>
 
           <button class="btn primary ai-apply" id="ai-apply">Apply</button>
+
+          <!-- Images are bytes, so they are uploaded rather than described. They
+               survive Apply; the JSON still controls everything about them. -->
+          <div class="ai-uploads">
+            <p class="ai-uploads-head">Images</p>
+            <div class="ai-upload" data-param="logo">
+              <span class="ai-up-name">Logo</span>
+              <span class="ai-up-state">none</span>
+              <label class="ai-up-pick">Choose<input type="file" accept="image/*" data-param="logo" hidden /></label>
+              <button class="ai-up-clear" type="button" data-param="logo" hidden>Clear</button>
+            </div>
+            <div class="ai-upload" data-param="bgImage">
+              <span class="ai-up-name">Background</span>
+              <span class="ai-up-state">none</span>
+              <label class="ai-up-pick">Choose<input type="file" accept="image/*" data-param="bgImage" hidden /></label>
+              <button class="ai-up-clear" type="button" data-param="bgImage" hidden>Clear</button>
+            </div>
+          </div>
         </aside>
+      </div>
+
+      <div class="exportbar ai-exportbar">
+        <button class="btn primary" id="ai-dl-png">Download PNG</button>
+        <select id="ai-pngscale" aria-label="PNG scale">
+          <option value="1">1&times;</option>
+          <option value="2" selected>2&times;</option>
+          <option value="4">4&times;</option>
+          <option value="8">8&times;</option>
+        </select>
+        <button class="btn" id="ai-dl-svg">Download SVG</button>
+        <button class="btn" id="ai-cp-svg">Copy SVG</button>
+        <button class="btn" id="ai-randomize">Randomize</button>
+        <button class="btn" id="ai-reset">Reset</button>
       </div>
     </div>
   </section>

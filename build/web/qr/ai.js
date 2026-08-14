@@ -13,8 +13,19 @@
 
 /* Dividers are layout. File inputs hold base64 data URIs of uploads: a model
    cannot produce one, so they are left out of the spec and rejected as unknown
-   keys on the way back in. */
+   keys on the way back in. The user uploads them in this tab instead, and they
+   survive Apply — see AI_IMAGES below. */
 const AI_SKIP = ["divider", "file"];
+
+/* The two params that hold bytes rather than a description. Everything *about*
+   them (logoSize, logoBackdrop, bgImgBlur, …) stays in the spec, so the model
+   styles an image it never has to produce. */
+const AI_IMAGES = ["logo", "bgImage"];
+
+/* codes.go caps a save body at 512 KB because these two params are base64.
+   Checking here turns a confusing 413 at save time into a clear message at
+   upload time, while the file can still be swapped for a smaller one. */
+const AI_MAX_BODY = 512 * 1024;
 
 /* ---------- the parameter table, flattened out of SECTIONS ---------- */
 function aiParams() {
@@ -85,7 +96,10 @@ function aiBuildSpec() {
   L.push("- Use only keys from the list below. Any other key is rejected and nothing renders.");
   L.push("- Match the stated type and range exactly. Out-of-range values are rejected, not clamped.");
   L.push("- Anything you leave out resets to its default, so include every key the design needs.");
-  L.push("- Images (centre logo, background photo) cannot be set this way. Ignore them.");
+  L.push("- The centre logo and background photo are image files I upload myself, so they are");
+  L.push("  not in the list and you cannot set them. You DO control everything about them:");
+  L.push("  logoSize, logoPad, logoBackdrop, logoRot, excavate, bgImgOpacity, bgImgBlur.");
+  L.push("  Right now: " + AI_IMAGES.map(k => `${k} = ${S[k] ? "uploaded" : "none"}`).join(", ") + ".");
   L.push('- "text" is the payload the code encodes. Keep it unless asked to change it.');
   L.push("- A QR code still has to scan: keep strong contrast between foreground and");
   L.push('  background, and raise "ecl" if you add heavy jitter, noise or a caption.');
@@ -220,11 +234,72 @@ function aiApply() {
   if (errs.length) { aiErrors(errs); return; }
   aiErrors([]);
   /* Full replace: applyParams clears S and merges onto DEFAULTS, so one paste
-     fully determines the code and an omitted key means "default", not "keep". */
+     fully determines the code and an omitted key means "default", not "keep".
+     The two image params are the exception — they carry uploaded bytes that no
+     JSON could restore, so wiping them would make every Apply destroy an
+     upload. Everything the model says *about* them still applies. */
+  const kept = {};
+  for (const k of AI_IMAGES) kept[k] = S[k];
   applyParams(params);
+  for (const k of AI_IMAGES) S[k] = kept[k];
+  syncPanel();
+  render();
+
   updateDirty();
   aiPreview();
   aiFlash(aiApplyBt, "Applied");
+}
+
+/* ---------- image uploads ----------
+   The rack's own file inputs write to the same S, so an image picked here shows
+   up in the manual tab too; only that tab's <input> stays visually empty, which
+   is a browser rule (file inputs cannot be set from script), not a bug. */
+const aiUploadRows = Array.from(document.querySelectorAll(".ai-upload"));
+
+function aiSyncUploads() {
+  for (const row of aiUploadRows) {
+    const on = !!S[row.dataset.param];
+    row.querySelector(".ai-up-state").textContent = on ? "uploaded" : "none";
+    row.classList.toggle("on", on);
+    row.querySelector(".ai-up-clear").hidden = !on;
+  }
+}
+
+function aiSetImage(param, dataURI) {
+  const prev = S[param];
+  S[param] = dataURI;
+  /* exactly the body codes.go will receive, so the check cannot drift from it */
+  const bytes = new Blob([JSON.stringify({ name: nameValue(), params: S })]).size;
+  if (bytes > AI_MAX_BODY) {
+    S[param] = prev;
+    aiErrors([`That image is too large — the code would be ${Math.round(bytes / 1024)} KB and the limit is ${AI_MAX_BODY / 1024} KB. Try a smaller or simpler file (SVG is tiny).`]);
+    return false;
+  }
+  aiErrors([]);
+  syncPanel();
+  render();
+  aiPreview();
+  aiSyncUploads();
+  updateDirty();
+  return true;
+}
+
+for (const row of aiUploadRows) {
+  const param = row.dataset.param;
+  row.querySelector('input[type="file"]').addEventListener("change", ev => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      if (!aiSetImage(param, fr.result)) ev.target.value = "";
+    };
+    fr.onerror = () => aiErrors([`Could not read ${file.name}.`]);
+    fr.readAsDataURL(file);
+  });
+  row.querySelector(".ai-up-clear").addEventListener("click", () => {
+    aiSetImage(param, null);
+    row.querySelector('input[type="file"]').value = "";
+  });
 }
 
 if (aiCopyBt)  aiCopyBt.addEventListener("click", aiCopy);
@@ -232,5 +307,51 @@ if (aiApplyBt) aiApplyBt.addEventListener("click", aiApply);
 
 /* script.js registered its tab handler first, so by the time this one runs the
    panel is already visible and S may have moved on in the manual tab. */
+/* ---------- export bar ----------
+   Randomize and Reset are app.js's own handlers, reached by clicking its
+   buttons rather than copying their bodies here — the same trick collection.js
+   uses for tabs. They mutate S and re-render, so this tab only has to repaint.
+   Downloads go through store.js, which names the file after the code instead of
+   the rack's hard-coded "qr.svg". */
+function aiWire(id, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("click", fn);
+}
+const aiProxy = id => () => {
+  const btn = document.getElementById(id);
+  if (btn) btn.click();
+  aiPreview();
+  aiSyncUploads(); // Reset puts logo/bgImage back to null, so the rows must follow
+};
+
+aiWire("ai-randomize", aiProxy("randomize"));
+aiWire("ai-reset", aiProxy("reset"));
+
+aiWire("ai-dl-svg", () => {
+  const out = buildSVG();
+  if (!out.error) downloadSVG(out, nameValue() || "qr");
+});
+
+aiWire("ai-dl-png", () => {
+  const out = buildSVG();
+  if (out.error) return;
+  const scale = Number((document.getElementById("ai-pngscale") || {}).value || 2);
+  downloadPNG(out, nameValue() || "qr", scale);
+});
+
+aiWire("ai-cp-svg", async () => {
+  const out = buildSVG();
+  if (out.error) { aiErrors([out.error]); return; }
+  const btn = document.getElementById("ai-cp-svg");
+  try {
+    await navigator.clipboard.writeText(out.svg);
+    aiFlash(btn, "Copied");
+  } catch {
+    aiFlash(btn, "Clipboard blocked");
+  }
+});
+
 const aiTab = document.querySelector('.tab[data-target="panel-ai"]');
-if (aiTab) aiTab.addEventListener("click", aiPreview);
+if (aiTab) aiTab.addEventListener("click", () => { aiPreview(); aiSyncUploads(); });
+
+aiSyncUploads();

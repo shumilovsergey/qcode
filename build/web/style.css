@@ -418,22 +418,6 @@ body { background: transparent; }
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- diagnostics ---------- */
-.qr-scope .diag { margin-top: 14px; }
-.qr-scope .verdict {
-  display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono);
-  font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600;
-  padding: 3px 8px; border: 1px solid currentColor; border-radius: 999px;
-}
-.qr-scope .v-good { color: var(--good); }
-.qr-scope .v-warn { color: var(--warn); }
-.qr-scope .v-bad  { color: var(--bad); }
-.qr-scope .notes { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
-.qr-scope .notes li { font-size: 12.5px; color: var(--ink2); padding-left: 14px; position: relative; max-width: 70ch; }
-.qr-scope .notes li::before {
-  content: ""; position: absolute; left: 0; top: 8px; width: 6px; height: 1px; background: var(--accent);
-}
-
 /* ---------- buttons ---------- */
 .qr-scope .exportbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
 .qr-scope .btn {
@@ -580,6 +564,7 @@ body { background: transparent; }
 /* ── APP · SAVE BAR (.qr-scope, editor only) ─────────────────────────────── */
 
 .qr-scope .savebar {
+  position: relative; /* anchor for .savebar-spin, which sits outside the flow */
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   margin-top: 16px; padding: 11px 13px; border: 1px solid var(--rule); background: var(--panel);
 }
@@ -596,6 +581,44 @@ body { background: transparent; }
 .qr-scope .save-status {
   font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
   color: var(--ink3); margin-left: auto;
+}
+
+/* Save feedback sits to the right of the button and speaks in the button's own
+   colour: a spinning arc while the request is in flight, a tick when it lands,
+   then nothing. The status line beside it is left for errors only. */
+/* Out of flow on purpose: the savebar is centred, so an indicator that took up
+   width would shunt the name and button sideways every time it appeared. */
+.qr-scope .savebar-spin {
+  position: absolute; left: 100%; margin-left: 14px; top: 50%;
+  width: 18px; height: 18px; margin-top: -9px;
+}
+
+.qr-scope .savebar-spin[data-state="busy"]::before {
+  content: ""; display: block; width: 100%; height: 100%; box-sizing: border-box;
+  border: 2px solid transparent; border-top-color: var(--accent);
+  border-right-color: var(--accent); border-radius: 50%;
+  animation: savebar-spin .62s linear infinite;
+}
+
+/* the tick is the arc's two strokes again — right and bottom, turned 45° */
+.qr-scope .savebar-spin[data-state="ok"]::before {
+  content: ""; display: block; box-sizing: border-box;
+  width: 7px; height: 12px; margin: 1px auto 0;
+  border: 2px solid var(--accent); border-left: 0; border-top: 0;
+  transform: rotate(45deg); transform-origin: center;
+  animation: savebar-tick .18s ease-out;
+}
+
+@keyframes savebar-spin { to { transform: rotate(360deg); } }
+@keyframes savebar-tick {
+  from { opacity: 0; transform: rotate(45deg) scale(.6); }
+  to   { opacity: 1; transform: rotate(45deg) scale(1); }
+}
+
+/* a spinner with no motion says nothing, so keep it — just stop it flickering */
+@media (prefers-reduced-motion: reduce) {
+  .qr-scope .savebar-spin[data-state="busy"]::before { animation-duration: 1.4s; }
+  .qr-scope .savebar-spin[data-state="ok"]::before { animation: none; }
 }
 
 /* in the header the savebar drops its panel chrome and centres, so it reads as
@@ -647,6 +670,102 @@ body { background: transparent; }
 }
 .qr-scope .ai-errors ul { margin: 0; padding-left: 15px; }
 .qr-scope .ai-errors li { word-break: break-word; }
+
+/* the export bar spans the whole page under the lab grid, not just a column */
+.qr-scope .ai-exportbar { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--rule); }
+
+/* ---------- one screen, no page scrolling ----------
+   Both editors are workbenches rather than documents: the stage and every
+   control around it have to be reachable at once. So the wrap is a column
+   exactly the height of the viewport minus the navbar (the same 86px
+   .app-content assumes), the lab takes whatever is left, and the QR scales
+   down to fit the stage instead of the stage growing to fit the QR.
+
+   Exactly one element inside each tab is allowed to scroll: the rack in
+   manual, the console in ai. Everything else is flex: none, so nothing can
+   push the export bar off the bottom.
+
+   Scoped to the children on purpose: setting `display` on a panel's #id would
+   outrank .panel[hidden] and the tab could never be hidden again. */
+#panel-ai .wrap,
+#panel-manual .wrap {
+  height: calc(100dvh - 86px);
+  display: flex; flex-direction: column;
+  padding-bottom: 18px;
+}
+#panel-ai .top-editor,
+#panel-manual .top-editor { flex: none; }
+
+#panel-ai .lab,
+#panel-manual .lab { flex: 1 1 auto; min-height: 0; align-items: stretch; padding-top: 16px; }
+
+#panel-ai .stagecol,
+#panel-manual .stagecol { position: static; display: flex; flex-direction: column; min-height: 0; }
+
+/* the stage is the only part of the column that gives, so it takes the slack */
+#panel-ai .stage,
+#panel-manual .stage { flex: 1 1 auto; min-height: 0; padding: 18px; }
+/* The svg sits inside #mount, not directly in .stage. A percentage max-height
+   only resolves against a parent with a definite height, and #mount's height is
+   content-driven — so without this the constraint is silently ignored and the
+   code overflows. Stretching the mount to the stage gives it that height. */
+#panel-ai .stage > div,
+#panel-manual .stage > div {
+  align-self: stretch; flex: 1 1 auto; min-width: 0; min-height: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+/* both max constraints on a viewBox'd svg keep the aspect ratio: the browser
+   applies whichever scale factor is smaller */
+#panel-ai .stage svg,
+#panel-manual .stage svg { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+
+/* ai: the console scrolls, and the textarea absorbs the slack inside it so a
+   short screen shrinks the paste box rather than pushing Apply out of reach */
+#panel-ai .ai-console { min-height: 0; overflow-y: auto; }
+#panel-ai .ai-json { flex: 1 1 auto; min-height: 110px; }
+#panel-ai .ai-exportbar { flex: none; margin-top: 14px; padding-top: 14px; }
+
+/* manual: the rack scrolls; presets, readout and export hold their size */
+#panel-manual .rack { min-height: 0; overflow-y: auto; }
+#panel-manual .presets,
+#panel-manual .readout,
+#panel-manual .exportbar { flex: none; }
+#panel-manual .presets { margin-bottom: 12px; }
+#panel-manual .exportbar { margin-top: 12px; }
+
+/* one column below 1080px, where a locked viewport height would only squash it */
+@media (max-width: 1080px) {
+  #panel-ai .wrap,
+  #panel-manual .wrap { height: auto; padding-bottom: 60px; }
+  #panel-ai .stage,
+  #panel-manual .stage { min-height: 380px; }
+  #panel-ai .ai-console { overflow-y: visible; }
+  #panel-manual .rack { overflow-y: visible; }
+}
+
+/* uploads — bytes the JSON cannot carry, so they get their own block */
+.qr-scope .ai-uploads { border-top: 1px solid var(--rule); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+.qr-scope .ai-uploads-head {
+  margin: 0; font-family: var(--mono); font-size: 10px; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink3);
+}
+
+.qr-scope .ai-upload { display: flex; align-items: center; gap: 9px; }
+.qr-scope .ai-up-name { font-size: 12.5px; color: var(--ink2); min-width: 78px; }
+.qr-scope .ai-up-state {
+  flex: 1; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink3);
+}
+.qr-scope .ai-upload.on .ai-up-state { color: var(--accent); }
+
+/* the real <input type=file> is hidden; its <label> is the button */
+.qr-scope .ai-up-pick, .qr-scope .ai-up-clear {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 5px 9px; border: 1px solid var(--rule); background: transparent; color: var(--ink2);
+  cursor: pointer; transition: border-color .12s, color .12s;
+}
+.qr-scope .ai-up-pick:hover { border-color: var(--accent); color: var(--accent); }
+.qr-scope .ai-up-clear:hover { border-color: var(--bad); color: var(--bad); }
+.qr-scope .ai-up-pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
 .qr-scope .save-status.bad { color: var(--bad); }
 
 /* ── APP · MODAL ──────────────────────────────────────────────────────────
