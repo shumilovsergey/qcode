@@ -137,7 +137,9 @@ for (const section of SECTIONS) {
   det.appendChild(body);
   rack.appendChild(det);
 }
-document.getElementById("paramcount").textContent = paramCount;
+/* the qcode UI has no masthead; the standalone skeleton still does */
+const paramCountEl = document.getElementById("paramcount");
+if (paramCountEl) paramCountEl.textContent = paramCount;
 
 /* ---------- push S back into the widgets (after presets / randomize) ---------- */
 function syncPanel() {

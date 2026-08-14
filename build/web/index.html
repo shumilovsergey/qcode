@@ -65,25 +65,15 @@
   <!-- ── MANUAL — the QR lab (ported from skeleton/) ─────────────────────── -->
   <section class="panel qr-scope" id="panel-manual" hidden>
     <div class="wrap">
-      <header class="top">
-        <div class="brand">
-          <h1>QR&nbsp;<em>Lab</em></h1>
-          <p>Every parameter that can be pushed client-side, with nothing but HTML, CSS and JS. Encoder written from scratch — no library, no build step, no network.</p>
-        </div>
-        <div class="topmeta">
-          <div>Encoder <b>v1&ndash;40</b></div>
-          <div>Deps <b>0</b></div>
-          <div>Params <b id="paramcount">&mdash;</b></div>
+      <header class="top top-editor">
+        <div class="savebar">
+          <label class="savebar-label" for="code-name">Name</label>
+          <input type="text" id="code-name" class="savebar-name" value="default" autocomplete="off" spellcheck="false" />
+          <span class="dirty" id="code-dirty" hidden title="unsaved changes"></span>
+          <span class="save-status" id="code-status"></span>
+          <button class="btn primary" id="code-save">Save</button>
         </div>
       </header>
-
-      <div class="savebar">
-        <label class="savebar-label" for="code-name">Name</label>
-        <input type="text" id="code-name" class="savebar-name" value="default" autocomplete="off" spellcheck="false" />
-        <span class="dirty" id="code-dirty" hidden title="unsaved changes"></span>
-        <span class="save-status" id="code-status"></span>
-        <button class="btn primary" id="code-save">Save</button>
-      </div>
 
       <div class="lab">
         <div class="stagecol">
