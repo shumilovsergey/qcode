@@ -69,9 +69,9 @@
         <div class="savebar">
           <label class="savebar-label" for="code-name">Name</label>
           <input type="text" id="code-name" class="savebar-name" value="default" autocomplete="off" spellcheck="false" />
-          <span class="dirty" id="code-dirty" hidden title="unsaved changes"></span>
-          <span class="save-status" id="code-status"></span>
-          <button class="btn primary" id="code-save">Save</button>
+          <span class="dirty savebar-dirty" id="code-dirty" hidden title="unsaved changes"></span>
+          <span class="save-status savebar-status" id="code-status"></span>
+          <button class="btn primary savebar-save" id="code-save">Save</button>
         </div>
       </header>
 
@@ -118,9 +118,45 @@
     </div>
   </section>
 
-  <!-- ── AI — parked, built later ───────────────────────────────────────── -->
-  <section class="panel panel-empty" id="panel-ai" hidden>
-    <div class="placeholder">AI</div>
+  <!-- ── AI — the same editor, driven by a clipboard round-trip ──────────── -->
+  <section class="panel qr-scope" id="panel-ai" hidden>
+    <div class="wrap">
+      <header class="top top-editor">
+        <div class="savebar">
+          <label class="savebar-label" for="ai-name">Name</label>
+          <input type="text" id="ai-name" class="savebar-name" value="default" autocomplete="off" spellcheck="false" />
+          <span class="dirty savebar-dirty" id="ai-dirty" hidden title="unsaved changes"></span>
+          <span class="save-status savebar-status" id="ai-status"></span>
+          <button class="btn primary savebar-save" id="ai-save">Save</button>
+        </div>
+      </header>
+
+      <div class="lab">
+        <div class="stagecol">
+          <div class="stage">
+            <i class="reg tl"></i><i class="reg tr"></i><i class="reg bl"></i><i class="reg br"></i>
+            <div id="ai-mount"></div>
+          </div>
+        </div>
+
+        <aside class="ai-console">
+          <ol class="ai-steps">
+            <li>Copy the instructions — every parameter, plus this code as it stands.</li>
+            <li>Paste them into your own AI and describe the code you want.</li>
+            <li>Paste the JSON it returns below and apply it.</li>
+          </ol>
+
+          <button class="btn ai-copy" id="ai-copy">Copy instructions</button>
+
+          <textarea id="ai-json" class="ai-json" spellcheck="false" autocomplete="off"
+                    placeholder='{&#10;  "shape": "circle",&#10;  "fg": "#15181B"&#10;}'></textarea>
+
+          <div class="ai-errors" id="ai-errors" hidden></div>
+
+          <button class="btn primary ai-apply" id="ai-apply">Apply</button>
+        </aside>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -169,6 +205,7 @@
 <script src="/qr/app.js"></script>
 <script src="/qr/store.js"></script>
 <script src="/qr/collection.js"></script>
+<script src="/qr/ai.js"></script>
 {{end}}
 </body>
 </html>

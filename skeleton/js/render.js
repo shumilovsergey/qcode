@@ -14,6 +14,16 @@ function contrastRatio(a, b) {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
+/* SVG ids are document-global, and every id below is a fixed string. One code
+   on screen makes that safe — which is all the standalone lab ever showed. A
+   page with several (card thumbnails, the manual stage, the ai preview) makes
+   it a bug: the later SVG's url(#fgg) resolves to the *first* #fgg in the
+   document, and when that one sits inside a hidden panel the paint server
+   cannot be used, so the modules render as nothing. Namespacing per render is
+   what keeps each SVG referring to its own defs. */
+let svgSeq = 0;
+const NS_IDS = /(\bid="|url\(#)(fgg|bgg|fsh|fgl|fbi|fnz|bgclip)\b/g;
+
 function buildSVG() {
   const qr = encodeQR(S.text || " ", S.ecl, S.minver, S.mask);
   if (qr.error) return { error: qr.error };
@@ -321,6 +331,9 @@ function buildSVG() {
   const filterAttr = filters.length ? ` filter="${filters.join(" ")}"` : "";
   const tintedGroup = tinted ? `<g fill="${S.alignColor}">${tinted}</g>` : "";
 
+  /* esc() turns every quote in user content into &quot;, so no caption or
+     payload can forge an id="…" or url(#…) for this rewrite to catch. */
+  const ns = "q" + (++svgSeq).toString(36) + "-";
   const svg =
 `<svg xmlns="http://www.w3.org/2000/svg" width="${n2(W)}" height="${n2(H)}" viewBox="0 0 ${n2(W)} ${n2(H)}" role="img" aria-label="QR code encoding ${esc(S.text).slice(0, 80)}">
 <defs>${defs}</defs>
@@ -328,7 +341,7 @@ ${bg}
 <g fill="${fgFill}" opacity="${n2(S.fgOpacity)}"${strokeAttr}${filterAttr}>${mods}${eyes}${tintedGroup}</g>
 ${logo}
 ${frame}${caption}
-</svg>`;
+</svg>`.replace(NS_IDS, (_, head, id) => head + ns + id);
 
   return {
     svg, w: W, h: H,

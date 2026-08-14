@@ -608,6 +608,45 @@ body { background: transparent; }
   flex: 0 1 300px; min-width: 0; height: 52px; padding: 0 14px; font-size: 14px;
 }
 .qr-scope .top-editor .save-status { margin-left: 0; }
+
+/* ── APP · AI CONSOLE (#panel-ai) ─────────────────────────────────────────
+   Sits in the .lab grid where the manual tab puts its control rack: same
+   column, same panel language, one instruction out and one paste back. */
+
+.qr-scope .ai-console {
+  display: flex; flex-direction: column; gap: 14px;
+  border: 1px solid var(--rule); background: var(--panel); padding: 18px;
+}
+
+.qr-scope .ai-steps {
+  margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 7px;
+  font-size: 12.5px; line-height: 1.5; color: var(--ink2);
+}
+.qr-scope .ai-steps::marker, .qr-scope .ai-steps li::marker {
+  font-family: var(--mono); font-size: 11px; color: var(--ink3);
+}
+
+.qr-scope .ai-copy, .qr-scope .ai-apply { width: 100%; padding: 13px; font-size: 12px; letter-spacing: .1em; }
+
+.qr-scope .ai-json {
+  width: 100%; min-height: 240px; resize: vertical;
+  font-family: var(--mono); font-size: 12px; line-height: 1.55;
+  padding: 11px 12px; border: 1px solid var(--rule); border-radius: 0;
+  background: var(--sunk); color: var(--ink); white-space: pre; overflow-wrap: normal;
+}
+.qr-scope .ai-json::placeholder { color: var(--ink3); }
+
+/* strict validation means every problem is listed at once — this block can get
+   long, so it scrolls rather than pushing Apply off the screen */
+.qr-scope .ai-errors {
+  border: 1px solid var(--bad); padding: 10px 12px; max-height: 200px; overflow-y: auto;
+  font-family: var(--mono); font-size: 11px; line-height: 1.6; color: var(--bad);
+}
+.qr-scope .ai-err-head {
+  margin: 0 0 6px; letter-spacing: .09em; text-transform: uppercase; font-size: 10px;
+}
+.qr-scope .ai-errors ul { margin: 0; padding-left: 15px; }
+.qr-scope .ai-errors li { word-break: break-word; }
 .qr-scope .save-status.bad { color: var(--bad); }
 
 /* ── APP · MODAL ──────────────────────────────────────────────────────────

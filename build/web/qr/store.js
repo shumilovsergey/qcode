@@ -42,19 +42,26 @@ let currentId   = null;
 let currentName = "default";
 let baseline    = "";
 
-const nameInput  = document.getElementById("code-name");
-const saveBtn    = document.getElementById("code-save");
-const dirtyMark  = document.getElementById("code-dirty");
-const saveStatus = document.getElementById("code-status");
+/* The manual and ai tabs are two views of one editor, so each has its own
+   savebar and every widget below is a list. They are never visible at once;
+   keeping them in sync is what makes switching tabs feel like staying put. */
+const savebarAll = sel => Array.from(document.querySelectorAll(sel));
+const nameInputs   = savebarAll(".savebar-name");
+const saveBtns     = savebarAll(".savebar-save");
+const dirtyMarks   = savebarAll(".savebar-dirty");
+const saveStatuses = savebarAll(".savebar-status");
+
+const nameValue = () => (nameInputs.length ? nameInputs[0].value.trim() : "");
 
 /* The name is part of what can be unsaved, so it belongs in the snapshot. */
 function snapshot() {
-  return JSON.stringify({ n: nameInput ? nameInput.value.trim() : "", s: S });
+  return JSON.stringify({ n: nameValue(), s: S });
 }
 function isDirty() { return snapshot() !== baseline; }
 
 function updateDirty() {
-  if (dirtyMark) dirtyMark.hidden = !isDirty();
+  const d = isDirty();
+  for (const m of dirtyMarks) m.hidden = !d;
 }
 
 /* applyParams rebuilds S from DEFAULTS up. Merging onto DEFAULTS first is not
@@ -72,7 +79,7 @@ function applyParams(params) {
 function setEditorMeta(id, name) {
   currentId = id;
   currentName = name;
-  if (nameInput) nameInput.value = name;
+  for (const i of nameInputs) i.value = name;
   baseline = snapshot();
   updateDirty();
   setStatus("");
@@ -90,13 +97,14 @@ function newDraft() {
 }
 
 function setStatus(msg, bad) {
-  if (!saveStatus) return;
-  saveStatus.textContent = msg;
-  saveStatus.classList.toggle("bad", !!bad);
+  for (const s of saveStatuses) {
+    s.textContent = msg;
+    s.classList.toggle("bad", !!bad);
+  }
 }
 
 async function saveCurrent() {
-  const name = (nameInput && nameInput.value.trim()) || "default";
+  const name = nameValue() || "default";
   const params = JSON.parse(JSON.stringify(S));
   setStatus("saving…");
   try {
@@ -113,7 +121,9 @@ async function saveCurrent() {
   paramCache.delete(currentId); // cached params are now stale
   setEditorMeta(currentId, name);
   setStatus("saved");
-  setTimeout(() => { if (saveStatus && saveStatus.textContent === "saved") setStatus(""); }, 1600);
+  setTimeout(() => {
+    if (saveStatuses.some(s => s.textContent === "saved")) setStatus("");
+  }, 1600);
 }
 
 /* ---------- rendering an arbitrary code ----------
@@ -154,17 +164,27 @@ function downloadPNG(out, name, scale) {
 }
 
 /* ---------- wiring ----------
-   One delegated listener covers the whole editor: the rack's inputs, the preset
-   buttons and randomize/reset all bubble here, so no hook inside render() is
-   needed to keep the dirty marker honest. */
-const manualPanel = document.getElementById("panel-manual");
-if (manualPanel) {
+   One delegated listener per editor panel: the rack's inputs, the preset
+   buttons, randomize/reset and the ai tab's Apply all bubble here, so no hook
+   inside render() is needed to keep the dirty marker honest. */
+for (const id of ["panel-manual", "panel-ai"]) {
+  const panel = document.getElementById(id);
+  if (!panel) continue;
   for (const ev of ["input", "change", "click"]) {
-    manualPanel.addEventListener(ev, () => setTimeout(updateDirty, 0));
+    panel.addEventListener(ev, () => setTimeout(updateDirty, 0));
   }
 }
-if (saveBtn) {
-  saveBtn.addEventListener("click", async () => {
+
+/* Typing in one tab's name field has to reach the other's, or switching tabs
+   would silently revert the rename. */
+for (const input of nameInputs) {
+  input.addEventListener("input", () => {
+    for (const other of nameInputs) if (other !== input) other.value = input.value;
+  });
+}
+
+for (const btn of saveBtns) {
+  btn.addEventListener("click", async () => {
     try { await saveCurrent(); await refreshCards(); } catch { /* status shows it */ }
   });
 }
