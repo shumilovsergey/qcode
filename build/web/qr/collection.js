@@ -151,22 +151,34 @@ async function refreshCards() {
 }
 
 /* ---------- card actions ---------- */
+/* Shared by the Edit button and by clicking the thumbnail. */
+async function openInEditor(id) {
+  if (id === currentId) { goTo("panel-manual"); return; }
+  if (!await confirmLeave()) return;
+  try { await loadCode(id); } catch (err) { listStatus.textContent = err.message; return; }
+  await refreshCards();
+  goTo("panel-manual");
+}
+
 grid.addEventListener("click", async e => {
-  const btn = e.target.closest(".cbtn");
-  if (!btn) return;
-  const card = btn.closest(".card");
+  const card = e.target.closest(".card");
+  if (!card) return;
   const id   = Number(card.dataset.id);
   const name = card.querySelector(".card-name").textContent;
 
+  /* The thumbnail is a shortcut for Edit. Nothing else in the card is a hit
+     target — the body holds the real buttons and must stay inert, or a stray
+     click near Delete would silently swap the open code. */
+  const btn = e.target.closest(".cbtn");
+  if (!btn) {
+    if (e.target.closest(".card-thumb")) await openInEditor(id);
+    return;
+  }
+
   switch (btn.dataset.act) {
-    case "edit": {
-      if (id === currentId) { goTo("panel-manual"); return; }
-      if (!await confirmLeave()) return;
-      try { await loadCode(id); } catch (err) { listStatus.textContent = err.message; return; }
-      await refreshCards();
-      goTo("panel-manual");
+    case "edit":
+      await openInEditor(id);
       break;
-    }
     case "svg":
     case "png": {
       try {

@@ -92,6 +92,20 @@ function aiBuildSpec() {
   L.push("You are configuring a QR-code renderer. Read the parameter list, then reply");
   L.push("with ONE JSON object and nothing else — no prose, no markdown fence.");
   L.push("");
+  /* The three things only the user knows. A model that guesses at these produces
+     a code that renders perfectly and points at the wrong place. */
+  L.push("Before you write any JSON, check these with me:");
+  L.push("- What should the code point at? If I have not given you a URL or some text,");
+  L.push("  ask me and wait. Never invent a payload — a QR code that scans cleanly to");
+  L.push("  the wrong address is worse than no answer at all.");
+  L.push('- What should the label say? A caption only appears when "frame" is "bottom",');
+  L.push('  "top", "pill" or "bar". If your design uses one and I have not told you the');
+  L.push("  wording, ask me rather than captioning it yourself.");
+  L.push("- Do you want a centre icon or a background photo? I upload those myself, so");
+  L.push("  if your design assumes either one, say so and I will add it before applying.");
+  L.push("  " + AI_IMAGES.map(k => `${k} = ${S[k] ? "uploaded" : "none"}`).join(", ") + " right now.");
+  L.push("Ask everything you need in one message, then wait for my answer.");
+  L.push("");
   L.push("Rules:");
   L.push("- Use only keys from the list below. Any other key is rejected and nothing renders.");
   L.push("- Match the stated type and range exactly. Out-of-range values are rejected, not clamped.");
@@ -99,7 +113,8 @@ function aiBuildSpec() {
   L.push("- The centre logo and background photo are image files I upload myself, so they are");
   L.push("  not in the list and you cannot set them. You DO control everything about them:");
   L.push("  logoSize, logoPad, logoBackdrop, logoRot, excavate, bgImgOpacity, bgImgBlur.");
-  L.push("  Right now: " + AI_IMAGES.map(k => `${k} = ${S[k] ? "uploaded" : "none"}`).join(", ") + ".");
+  L.push("  Set those as if the image were already there — I can upload it at any time");
+  L.push("  and it survives every future paste.");
   L.push('- "text" is the payload the code encodes. Keep it unless asked to change it.');
   L.push("- A QR code still has to scan: keep strong contrast between foreground and");
   L.push('  background, and raise "ecl" if you add heavy jitter, noise or a caption.');

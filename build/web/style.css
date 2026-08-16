@@ -537,11 +537,27 @@ body { background: transparent; }
 
 .qr-scope .card { border: 1px solid var(--rule); background: var(--panel); display: flex; flex-direction: column; }
 
+/* The thumbnail is the card's one hit target — clicking it opens the code in the
+   editor, same as Edit. The body stays inert so the action buttons keep their
+   own meaning, which is why only this block gets a pointer and a hover. */
 .qr-scope .card-thumb {
   aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
   padding: 18px; background: var(--sunk); border-bottom: 1px solid var(--rule2); overflow: hidden;
+  cursor: pointer; transition: background .16s, border-color .16s;
 }
-.qr-scope .card-thumb svg { max-width: 100%; max-height: 100%; height: auto; display: block; }
+.qr-scope .card-thumb:hover { background: #0B0D0F; border-bottom-color: var(--accent); }
+/* scaling the svg rather than the card keeps the grid still: no reflow, and
+   overflow:hidden above crops the growth instead of spilling onto a neighbour */
+.qr-scope .card-thumb svg {
+  max-width: 100%; max-height: 100%; height: auto; display: block;
+  transition: transform .18s ease;
+}
+.qr-scope .card-thumb:hover svg { transform: scale(1.06); }
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-scope .card-thumb svg { transition: none; }
+  .qr-scope .card-thumb:hover svg { transform: none; }
+}
 .qr-scope .card-spin { font-family: var(--mono); font-size: 18px; color: var(--ink3); }
 .qr-scope .card-err  { font-family: var(--mono); font-size: 11px; color: var(--bad); text-align: center; }
 
