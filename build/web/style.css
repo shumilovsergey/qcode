@@ -549,14 +549,16 @@ body { background: transparent; }
 .qr-scope .card-name { font-size: 13.5px; font-weight: 600; color: var(--ink); word-break: break-word; }
 .qr-scope .card-date { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: var(--ink3); }
 
-.qr-scope .card-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+/* four actions, always one row: equal columns that shrink with the card
+   rather than wrapping delete onto a line of its own */
+.qr-scope .card-actions { display: flex; flex-wrap: nowrap; gap: 4px; margin-top: 9px; }
 .qr-scope .cbtn {
+  flex: 1 1 0; min-width: 0; text-align: center;
   font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
-  padding: 5px 8px; border: 1px solid var(--rule); background: transparent; color: var(--ink2);
+  padding: 5px 4px; border: 1px solid var(--rule); background: transparent; color: var(--ink2);
   transition: border-color .12s, color .12s;
 }
 .qr-scope .cbtn:hover { border-color: var(--accent); color: var(--accent); }
-.qr-scope .cbtn-danger:hover { border-color: var(--bad); color: var(--bad); }
 
 .qr-scope .codes-empty { padding: 60px 0; text-align: center; color: var(--ink2); }
 .qr-scope .codes-empty .sub { margin-top: 6px; font-size: 12.5px; color: var(--ink3); }
@@ -769,7 +771,7 @@ body { background: transparent; }
 .qr-scope .save-status.bad { color: var(--bad); }
 
 /* ── APP · MODAL ──────────────────────────────────────────────────────────
-   Unsaved-changes gate, rename and delete. Lives outside .qr-scope, so it
+   Unsaved-changes gate and delete. Lives outside .qr-scope, so it
    carries its own copy of the few tokens it needs. */
 
 .modal-backdrop {
@@ -787,12 +789,6 @@ body { background: transparent; }
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
 }
 .modal-msg { font-size: 14px; line-height: 1.55; color: #E7E9E3; }
-.modal-input {
-  font: inherit; font-size: 13px; padding: 8px 10px;
-  background: #0E1013; color: #E7E9E3; border: 1px solid #2B2F34; border-radius: 0;
-}
-.modal-input[hidden] { display: none; }
-.modal-input:focus-visible { outline: 2px solid #E4628A; outline-offset: 2px; }
 
 .modal-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .modal-buttons .btn {

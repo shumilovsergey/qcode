@@ -15,7 +15,6 @@ const paramCache = new Map(); // id -> params, so download never refetches
    offer a real third choice — cancel the navigation and stay put. */
 const modal      = document.getElementById("modal");
 const modalMsg   = document.getElementById("modal-msg");
-const modalInput = document.getElementById("modal-input");
 const modalBtns  = document.getElementById("modal-buttons");
 let   modalDone  = null;
 
@@ -28,25 +27,20 @@ function closeModal(value) {
 }
 
 /* buttons: [{ value, label, cls }] — the first is the default action. */
-function showModal({ message, buttons, input }) {
+function showModal({ message, buttons }) {
   modalMsg.textContent = message;
   modalBtns.innerHTML = "";
-
-  modalInput.hidden = !input;
-  if (input) modalInput.value = input.value || "";
 
   for (const b of buttons) {
     const el = document.createElement("button");
     el.className = "btn" + (b.cls ? " " + b.cls : "");
     el.textContent = b.label;
-    el.addEventListener("click", () =>
-      closeModal(input ? { action: b.value, text: modalInput.value.trim() } : b.value));
+    el.addEventListener("click", () => closeModal(b.value));
     modalBtns.appendChild(el);
   }
 
   modal.hidden = false;
-  (input ? modalInput : modalBtns.firstChild).focus();
-  if (input) modalInput.select();
+  modalBtns.firstChild.focus();
 
   return new Promise(res => { modalDone = res; });
 }
@@ -55,7 +49,6 @@ modal.addEventListener("click", e => { if (e.target === modal) closeModal(null);
 document.addEventListener("keydown", e => {
   if (modal.hidden) return;
   if (e.key === "Escape") closeModal(null);
-  if (e.key === "Enter" && !modalInput.hidden) modalBtns.firstChild.click();
 });
 
 /* ---------- the unsaved-changes gate ----------
@@ -81,6 +74,17 @@ async function confirmLeave() {
 const goTo = id => document.querySelector(`.tab[data-target="${id}"]`).click();
 
 /* ---------- cards ---------- */
+/* Time first, then date: "14:44 14.08.2026". Built by hand rather than with
+   toLocaleString(), which puts the date first and follows the browser locale —
+   the readout strip and the card stamps have to match whatever machine it is. */
+const pad2 = n => String(n).padStart(2, "0");
+function stamp(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())} ` +
+         `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
 function cardEl(c) {
   const el = document.createElement("article");
   el.className = "card";
@@ -89,13 +93,12 @@ function cardEl(c) {
     <div class="card-thumb"><span class="card-spin">…</span></div>
     <div class="card-body">
       <h3 class="card-name">${esc(c.name)}</h3>
-      <div class="card-date">${new Date(c.updated_at).toLocaleString()}</div>
+      <div class="card-date">${stamp(c.updated_at)}</div>
       <div class="card-actions">
         <button class="cbtn" data-act="edit">edit</button>
-        <button class="cbtn" data-act="rename">rename</button>
         <button class="cbtn" data-act="svg">svg</button>
         <button class="cbtn" data-act="png">png</button>
-        <button class="cbtn cbtn-danger" data-act="delete">delete</button>
+        <button class="cbtn" data-act="delete">delete</button>
       </div>
     </div>`;
   return el;
@@ -162,20 +165,6 @@ grid.addEventListener("click", async e => {
       try { await loadCode(id); } catch (err) { listStatus.textContent = err.message; return; }
       await refreshCards();
       goTo("panel-manual");
-      break;
-    }
-    case "rename": {
-      const r = await showModal({
-        message: "Rename this code",
-        input: { value: name },
-        buttons: [{ value: "ok", label: "Rename", cls: "primary" }, { value: "cancel", label: "Cancel" }]
-      });
-      if (!r || r.action !== "ok" || !r.text || r.text === name) return;
-      try {
-        await api.update(id, { name: r.text });
-        if (id === currentId) setEditorMeta(id, r.text);
-        await refreshCards();
-      } catch (err) { listStatus.textContent = err.message; }
       break;
     }
     case "svg":
