@@ -29,7 +29,8 @@ CHASSIS — copy exactly, every time:
   is allowed to be round even in an app that is otherwise all hard corners.
   Effects stay off — every one of them trades scan reliability for decoration
   this family does not use. If a design needs texture, change the module shape,
-  not the grain.
+  not the grain. The logo keys are geometry, not taste — see CENTRE ICON below
+  for what they resolve to and why 0.25 and 0.03 cannot move independently.
 
   "text" is the app's public URL, https://<app>.sh-development.ru
   "caption" is the app's own name in lowercase, spelled exactly as the product
@@ -70,10 +71,48 @@ SKIN — change all four for every app:
      qcode's three printing plates do. Three arbitrary colours just look busy.
   Never "eyeColorMode": "inherit" — it lets the eyes vanish into the module fill.
 
-  Every app has an icon and the code should carry it. The logo values above are
-  already tuned for the app's favicon at the family's standard size; leave them
-  set even when no image is uploaded yet. A code without a logo is acceptable but
-  reads as unfinished beside one that has it.
+CENTRE ICON — fixed geometry, never a per-app decision:
+
+  Every app has an icon and the code should carry it. The five logo keys in
+  CHASSIS are the whole of it — leave them set even when no image is uploaded
+  yet. A code without a logo is acceptable but reads as unfinished beside one
+  that has it. Never tune logoSize to "make this particular icon look right";
+  the whole point is that every sibling's icon lands at the same size, and an
+  icon that looks wrong at 0.25 is drawn wrong, not sized wrong.
+
+  What the numbers mean at the family's fixed grid (v4, 33x33, cell 10,
+  quiet 4 -> a 410x410 code area):
+
+    logoSize 0.25  ->  the artwork is drawn 102.5 x 102.5 px, 10.25 modules
+    logoPad  0.03  ->  excavate clears 10.23 modules, 102.3 px
+
+  Those two are a matched pair, not two free knobs. The renderer sizes the
+  artwork against the code area *including* the quiet zone and excavates
+  against the module grid *excluding* it, so the hole only lands flush around
+  the artwork when
+
+    logoPad = logoSize * quiet / size  =  0.25 * 4 / 33  =  0.0303
+
+  which is where 0.03 comes from. Change logoSize alone and the icon either
+  overhangs live modules or floats in an oversized hole. If a code ever lands
+  off v4 — a long URL pushing it to v5, 37x37 — recompute logoPad from that
+  identity (0.25 * 4 / 37 = 0.027) instead of eyeballing it.
+
+  The artwork itself has to be prepared, or identical parameters still give
+  different sizes:
+
+  - Square viewBox, art bleeding to all four edges. The renderer draws with
+    preserveAspectRatio="xMidYMid meet", which fits the *file's* box into the
+    102.5 px square. A 64x48 icon, or a 64x64 one with 8px of built-in
+    breathing room, renders visibly smaller than its sibling at the same
+    logoSize. Trim the padding out of the file, not out of logoSize.
+  - The icon paints its own ground in the code's own "bg" value, full bleed,
+    which is why logoBackdrop is "none". Do not switch the backdrop on to
+    rescue an icon with a transparent background — give the file its ground.
+    nom-nom's is a 64x64 rect at #211C18 with the donut on top, and the bite
+    out of its corner is a circle in that same ground colour.
+  - Inline the bytes as a data URI. A remote URL renders on screen and is
+    silently dropped from PNG export.
 
 SCAN FLOOR — the renderer scores this; ship only at risk 0:
   Contrast at least 4.5:1 between foreground and background. For a gradient the

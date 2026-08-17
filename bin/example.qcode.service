@@ -6,6 +6,10 @@ After=network.target
 User=root
 ExecStart=
 WorkingDirectory=
+
+# обязательно проверять
+Environment=APP_NAME=qcode
+# можно игнорировать
 Environment=DB_PATH=
 
 
