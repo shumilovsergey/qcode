@@ -97,7 +97,7 @@ function cardEl(c) {
       <div class="card-actions">
         <button class="cbtn" data-act="edit">edit</button>
         <button class="cbtn" data-act="svg">svg</button>
-        <button class="cbtn" data-act="png">png</button>
+        <button class="cbtn" data-act="webp">webp</button>
         <button class="cbtn" data-act="delete">delete</button>
       </div>
     </div>`;
@@ -179,12 +179,15 @@ grid.addEventListener("click", async e => {
     case "edit":
       await openInEditor(id);
       break;
+    /* The grid offers svg + webp only — two buttons is all the card has room
+       for, and webp is the smaller of the two rasters. PNG stays available in
+       the editor tabs, where the export bar has the space for a scale picker. */
     case "svg":
-    case "png": {
+    case "webp": {
       try {
         const out = renderWith(await paramsFor(id));
         if (out.error) { listStatus.textContent = out.error; return; }
-        btn.dataset.act === "svg" ? downloadSVG(out, name) : downloadPNG(out, name, 2);
+        btn.dataset.act === "svg" ? downloadSVG(out, name) : downloadWEBP(out, name, 2);
       } catch (err) { listStatus.textContent = err.message; }
       break;
     }

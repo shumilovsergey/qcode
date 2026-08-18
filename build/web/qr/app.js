@@ -249,7 +249,7 @@ function download(name, url) {
 }
 
 document.getElementById("dl-svg").addEventListener("click", () => {
-  download("qr.svg", svgDataURI(last.svg));
+  downloadSVG(last, nameValue() || "qr");
 });
 
 document.getElementById("cp-svg").addEventListener("click", async e => {
@@ -263,18 +263,18 @@ document.getElementById("cp-svg").addEventListener("click", async e => {
   setTimeout(() => { btn.textContent = "Copy SVG"; }, 1400);
 });
 
+/* Raster exports go through store.js's downloadRaster, which the ai tab's bar
+   already uses — manual and ai are two views of one editor, so the same click
+   must produce the same file. store.js is loaded after this file, but these
+   only run on click, long after it has parsed. */
+const rasterScale = () => Number(document.getElementById("pngscale").value);
+
 document.getElementById("dl-png").addEventListener("click", () => {
-  const k = Number(document.getElementById("pngscale").value);
-  const img = new Image();
-  img.onload = () => {
-    const cv = document.createElement("canvas");
-    cv.width = Math.round(last.w * k);
-    cv.height = Math.round(last.h * k);
-    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-    download(`qr@${k}x.png`, cv.toDataURL("image/png"));
-  };
-  img.onerror = () => alert("PNG export failed. Download the SVG instead.");
-  img.src = svgDataURI(last.svg);
+  downloadPNG(last, nameValue() || "qr", rasterScale());
+});
+
+document.getElementById("dl-webp").addEventListener("click", () => {
+  downloadWEBP(last, nameValue() || "qr", rasterScale());
 });
 
 render();

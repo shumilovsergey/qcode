@@ -164,7 +164,11 @@ function downloadSVG(out, name) {
   download(`${safeFile(name)}.svg`, svgDataURI(out.svg));
 }
 
-function downloadPNG(out, name, scale) {
+/* Raster export. PNG and WebP differ only in the mime handed to toDataURL,
+   so they share one rasteriser. Quality is pinned to 1 for WebP: a QR is hard
+   edges on flat colour, exactly what lossy chroma subsampling smears, and a
+   smeared module is an unscannable code. */
+function downloadRaster(out, name, scale, mime, ext) {
   const k = scale || 2;
   const img = new Image();
   img.onload = () => {
@@ -172,10 +176,26 @@ function downloadPNG(out, name, scale) {
     cv.width = Math.round(out.w * k);
     cv.height = Math.round(out.h * k);
     cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-    download(`${safeFile(name)}@${k}x.png`, cv.toDataURL("image/png"));
+    const url = cv.toDataURL(mime, 1);
+    /* A browser that cannot encode the type silently answers with a PNG data
+       URI instead of failing, which would hand the user a .webp that is not
+       one. */
+    if (url.indexOf(`data:${mime}`) !== 0) {
+      alert(`${ext.toUpperCase()} export is not supported by this browser. Download the SVG or PNG instead.`);
+      return;
+    }
+    download(`${safeFile(name)}@${k}x.${ext}`, url);
   };
-  img.onerror = () => alert("PNG export failed. Download the SVG instead.");
+  img.onerror = () => alert(`${ext.toUpperCase()} export failed. Download the SVG instead.`);
   img.src = svgDataURI(out.svg);
+}
+
+function downloadPNG(out, name, scale) {
+  downloadRaster(out, name, scale, "image/png", "png");
+}
+
+function downloadWEBP(out, name, scale) {
+  downloadRaster(out, name, scale, "image/webp", "webp");
 }
 
 /* ---------- wiring ----------

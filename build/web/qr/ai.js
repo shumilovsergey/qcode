@@ -347,11 +347,18 @@ aiWire("ai-dl-svg", () => {
   if (!out.error) downloadSVG(out, nameValue() || "qr");
 });
 
+const aiScale = () => Number((document.getElementById("ai-pngscale") || {}).value || 2);
+
 aiWire("ai-dl-png", () => {
   const out = buildSVG();
   if (out.error) return;
-  const scale = Number((document.getElementById("ai-pngscale") || {}).value || 2);
-  downloadPNG(out, nameValue() || "qr", scale);
+  downloadPNG(out, nameValue() || "qr", aiScale());
+});
+
+aiWire("ai-dl-webp", () => {
+  const out = buildSVG();
+  if (out.error) return;
+  downloadWEBP(out, nameValue() || "qr", aiScale());
 });
 
 aiWire("ai-cp-svg", async () => {
